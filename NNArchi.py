@@ -4,6 +4,25 @@ from urllib import request
 
 import pandas as pd
 
+keras_apps_list = ['Xception',
+                   'VGG16',
+                   'VGG19',
+                   'ResNet50',
+                   'ResNet101',
+                   'ResNet152',
+                   'ResNet50V2',
+                   'ResNet101V2',
+                   'ResNet152V2',
+                   'InceptionV3',
+                   'InceptionResNetV2',
+                   'MobileNet',
+                   'MobileNetV2',
+                   'DenseNet121',
+                   'DenseNet169',
+                   'DenseNet201',
+                   'NASNetMobile',
+                   'NASNetLarge']
+
 def get_repo_full_name(repo_url):
     name_pattern = re.compile('github.com/', re.I)
     name_search = name_pattern.search(repo_url)
@@ -31,6 +50,14 @@ def split_py(py_file):
             is_code = False
         py_in_lines[i] = (line, space_num, is_code)
     return py_in_lines, line_num
+
+def extract_layer_info(add_info):
+    extracted_layer_info = {}
+    search_type = re.search('\(', add_info)
+    layer_type = add_info[:search_type.span()[0]]
+    extract_layer_info['type'] = layer_type
+    #todo: classify different layer type
+    return extracted_layer_info
 
 def extract_architecture_from_python(repo_full_name):
 
@@ -92,6 +119,7 @@ def extract_architecture_from_python(repo_full_name):
                     model_num += 1
                     model_detail[model_num] = {}
                     model_detail[model_num]['type'] = 'Sequential' 
+                    '''
                     next_line = line_index
                     while True:
                         next_line += 1
@@ -101,14 +129,45 @@ def extract_architecture_from_python(repo_full_name):
                                 if search_add:
                                     quote_start = (next_line, search_add.span()[1])
                                     add_info = get_add_info(py_in_lines, quote_start)
+                                    layers[layer_index] = extract_layer_info(add_info)
                             else:
                                 break
                         else:
                             continue
-                '''
-                if search_apps:
+                    '''
+                elif search_apps:
                     model_num += 1
-                '''
+                    model_detail[model_num] = {}
+                    temp_line = py_in_lines[line_index][0]
+                    app_type_start = search_apps.span()[1]
+                    app_type = temp_line[app_name_start:app_name_start + re.search('\(', temp_line[app_name_start:]).span()[0]]
+                    if app_type in keras_apps_list:
+                        model_detail[model_num]['type'] = app_type
+                    else:
+                        model_detail[model_num]['type'] = 'Unknown base model: ' + app_type
+                next_line = line_index
+                layer_index = 0
+                layers = {}
+                while True:
+                    next_line += 1
+                    if py_in_lines[next_line][2]:
+                        if py_in_lines[next_line][1] >= py_in_lines[line_index][1]:
+                            search_add = re.search('\.add\(', py_in_lines[next_line][0])
+                            if search_add:
+                                layer_index += 1
+                                quote_start = (next_line, search_add.span()[1])
+                                add_info = get_add_info(py_in_lines, quote_start)
+                                layers[layer_index] = extract_layer_info(add_info)
+                            search_compile = re.search('\.compile\(', py_in_lines[next_line][0])
+                            if search_compile:
+                                #todo search optimizer and loss function
+                                pass
+                        else:
+                            break
+                    else:
+                        continue
+                model_detail[model_num]['layers'] = layers
+                #todo: add optimizer and loss function
 
 '''
 #main
