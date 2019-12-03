@@ -55,14 +55,90 @@ def extract_layer_info(quote_info):
     extracted_layer_info = {}
     search_type = re.search('\(', quote_info)
     layer_type = quote_info[:search_type.span()[0]]
-    #extract_layer_info['type'] = layer_type
+    #extracted_layer_info['type'] = layer_type
     #todo: classify different layer type
     if layer_type == 'Dense':
         layer_shape = quote_info[search_type.span()[1]:re.search('\)|,', quote_info).span()[0]]
-    elif layer_type == 'Dropout':
-        pass
+        search_activation = re.search('activation=', quote_info)
+        layer_activation = 'linear'
+        if search_activation:
+            layer_activation_start = search_activation.span()[1]
+            search_comma = re.search(',', quote_info[layer_activation_start:])
+            if search_comma:
+                layer_activation = quote_info[layer_activation_start:layer_activation_start + search_comma.span()[0]]
+            else:
+                layer_activation = quote_info[layer_activation_start:-1]
+            layer_activation = re.sub('\'', '', layer_activation)
+            if layer_activation.lower() == 'none':
+                layer_activation = 'linear'
+        extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'activation':layer_activation, 'info':quote_info}
+    elif layer_type == 'Dropout' or layer_type == 'SpatialDropout1D' or layer_type == 'SpatialDropout2D' or layer_type == 'SpatialDropout3D':
+        search_rate = re.search('rate=', quote_info)
+        if search_rate:
+            layer_rate = quote_info[search_rate.span()[1]:re.search('\)|,', quote_info).span()[0]]
+        else:
+            layer_rate = quote_info[re.search('\(', quote_info).span()[1]:re.search('\)|,', quote_info).span()[0]]
+        extracted_layer_info = {'type':layer_type, 'rate':layer_rate, 'info':quote_info}
     elif layer_type == 'Flatten':
+        layer_shape = 'Same with former layer'
+        extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'info':quote_info}
+    elif layer_type == 'Conv1D' or layer_type == 'Conv2D' or layer_type == 'SeparableConv1D' or layer_type == 'SeparableConv2D': #todo add conv3d
+        search_filters = re.search('filters=', quote_info)
+        layer_filters = 'Unknown'
+        if search_filters:
+            layer_filters_start = search_filters.span()[1]
+            search_comma = re.search(',', quote_info[layer_filters_start:])
+            if search_comma:
+                layer_filters = quote_info[layer_filters_start:layer_filters_start + search_comma.span()[0]]
+            else:
+                layer_filters = quote_info[layer_filters_start:-1]
+        search_kernel_size = re.search('kernel_size=', quote_info)
+        layer_kernel_size = 'Unknown'
+        if search_kernel_size:
+            layer_kernel_size_start = search_kernel_size.span()[1]
+            search_comma = re.search(',', quote_info[layer_kernel_size_start:])
+            if search_comma:
+                layer_kernel_size = quote_info[layer_kernel_size_start:layer_kernel_size_start + search_comma.span()[0]]
+            else:
+                layer_kernel_size = quote_info[layer_kernel_size_start:-1]
+        search_strides = re.search('strides=', quote_info)
+        if layer_type[-2:] =='2D':
+            layer_strides = '(1, 1)'
+        else:
+            layer_strides = '1'
+        if search_strides:
+            layer_strides_start = search_strides.span()[1]
+            search_comma = re.search(',', quote_info[layer_strides_start:])
+            if search_comma:
+                layer_strides = quote_info[layer_strides_start:layer_strides_start + search_comma.span()[0]]
+            else:
+                layer_strides = quote_info[layer_strides_start:-1]
+        search_padding = re.search('padding=', quote_info)
+        layer_padding = 'valid'
+        if search_padding:
+            search_causal = re.search('causal', quote_info)
+            search_same = re.search('same', quote_info)
+            if search_causal:
+                layer_padding = 'causal'
+            elif search_same:
+                layer_padding = 'same'
+        search_activation = re.search('activation=', quote_info)
+        layer_activation = 'linear'
+        if search_activation:
+            layer_activation_start = search_activation.span()[1]
+            search_comma = re.search(',', quote_info[layer_activation_start:])
+            if search_comma:
+                layer_activation = quote_info[layer_activation_start:layer_activation_start + search_comma.span()[0]]
+            else:
+                layer_activation = quote_info[layer_activation_start:-1]
+            layer_activation = re.sub('\'', '', layer_activation)
+            if layer_activation.lower() == 'none':
+                layer_activation = 'linear'
+        extracted_layer_info = {'type':layer_type, 'filters':layer_filters, 'kernel_size':layer_kernel_size, 'strides':layer_strides, 'padding':layer_padding, 'activation':layer_activation, 'info':quote_info}
+    elif layer_type == 'MaxPooling1D' or layer_type == 'MaxPooling2D' or layer_type == 'MaxPooling3D' or layer_type == 'AveragePooling1D' or layer_type == 'AveragePooling2D' or layer_type == 'AveragePooling3D': #todo add other pooling
         pass
+    else:
+        extracted_layer_info = {'type':layer_type, 'info':quote_info}
     return extracted_layer_info
 
 def extract_architecture_from_python(repo_full_name):
@@ -111,6 +187,7 @@ def extract_architecture_from_python(repo_full_name):
     '''
     #py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
     py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
+    #py_files_list = ["https://raw.githubusercontent.com/nagyben/CarND-Behavioral-Cloning-P3/f044a3a1eff5b30171b763eb2eda0b2dba19469e/train.py"] #test file
     
     for raw_file_url in py_files_list:
         raw_file = request.urlopen(raw_file_url).read().decode("utf-8")
