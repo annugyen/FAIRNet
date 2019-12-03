@@ -55,8 +55,14 @@ def extract_layer_info(quote_info):
     extracted_layer_info = {}
     search_type = re.search('\(', quote_info)
     layer_type = quote_info[:search_type.span()[0]]
-    extract_layer_info['type'] = layer_type
+    #extract_layer_info['type'] = layer_type
     #todo: classify different layer type
+    if layer_type == 'Dense':
+        layer_shape = quote_info[search_type.span()[1]:re.search('\)|,', quote_info).span()[0]]
+    elif layer_type == 'Dropout':
+        pass
+    elif layer_type == 'Flatten':
+        pass
     return extracted_layer_info
 
 def extract_architecture_from_python(repo_full_name):
@@ -65,23 +71,26 @@ def extract_architecture_from_python(repo_full_name):
         quote_num = 1
         quote_line = quote_start[0]
         quote_postion = quote_start[1]
-        while True:
+        #while True:
+        while quote_num != 0:
             if quote_postion < len(py_in_lines[quote_line][0]):
                 if py_in_lines[quote_line][0][quote_postion] == '(':
                     quote_num += 1
                 elif py_in_lines[quote_line][0][quote_postion] == ')':
                     quote_num -= 1
-            if quote_num == 0:
-                break
-            quote_postion += 1
-            if quote_postion >= len(py_in_lines[quote_line][0]):
-                quote_postion = 0
-                quote_line += 1
+            if quote_num != 0:
+                quote_postion += 1
+                if quote_postion >= len(py_in_lines[quote_line][0]):
+                    quote_postion = 0
+                    quote_line += 1
+        if quote_start[0] == quote_line:
+            quote_info = py_in_lines[quote_start[0]][0][quote_start[1]:quote_postion]
+        else:
             quote_info = py_in_lines[quote_start[0]][0][quote_start[1]:]
             for i in range(quote_start[0] + 1, quote_line):
                 quote_info += py_in_lines[i][0][py_in_lines[i][1]:]
-            if quote_start[0] < quote_line:
-                quote_info += py_in_lines[quote_line][0][py_in_lines[quote_line][1]:quote_postion]
+            quote_info += py_in_lines[quote_line][0][py_in_lines[quote_line][1]:quote_postion]
+        quote_info = re.sub(' ', '', quote_info)
         return quote_info
     
     '''
@@ -100,8 +109,8 @@ def extract_architecture_from_python(repo_full_name):
     else:
         print('Keras may not be used.')
     '''
-    py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
-    #py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
+    #py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
+    py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
     
     for raw_file_url in py_files_list:
         raw_file = request.urlopen(raw_file_url).read().decode("utf-8")
@@ -122,16 +131,18 @@ def extract_architecture_from_python(repo_full_name):
             while line_index < line_num:
                 search_seq = re.search('Sequential\(', py_in_lines[line_index][0])
                 search_apps = re.search('applications\.', py_in_lines[line_index][0])
+                model_found = False
 
                 if search_apps:
-                    model_start_index = line_index
-                    model_num += 1
-                    model_detail[model_num] = {}
                     temp_line = py_in_lines[line_index][0]
                     app_type_start = search_apps.span()[1]
-                    app_type = temp_line[app_name_start:app_name_start + re.search('\(', temp_line[app_name_start:]).span()[0]]
+                    app_type = temp_line[app_type_start:app_type_start + re.search('\(', temp_line[app_type_start:]).span()[0]]
                     if app_type in keras_apps_list:
+                        model_num += 1
+                        model_detail[model_num] = {}
+                        model_found = True
                         model_detail[model_num]['type'] = app_type
+                        model_start_index = line_index
                     else:
                         model_detail[model_num]['type'] = 'Unknown base model: ' + app_type
                 elif search_seq:
@@ -139,56 +150,36 @@ def extract_architecture_from_python(repo_full_name):
                     model_num += 1
                     model_detail[model_num] = {}
                     model_detail[model_num]['type'] = 'Sequential'
+                    model_found = True
                 
                 model_end_index = model_start_index
-                while True:
-                    if py_in_lines[model_end_index][2] and py_in_lines[model_end_index][1] < py_in_lines[model_end_index][1]:
+                while model_found:
+                    if py_in_lines[model_end_index][2] and py_in_lines[model_end_index][1] < py_in_lines[model_start_index][1]:
                         break
                     elif model_end_index < line_num - 1:
                         model_end_index += 1
                     else:
                         break
                 
-                layer_index = 0
-                layers = {}
-                for idx in range(model_start_index + 1, model_end_index + 1):
-                    search_add = re.search('\.add\(', py_in_lines[idx][0])
-                    search_compile = re.search('\.compile\(', py_in_lines[idx][0])
-                    if search_add:
-                        layer_index += 1
-                        quote_start = (idx, search_add.span()[1])
-                        quote_info = get_quote_info(py_in_lines, quote_start)
-                        layers[layer_index] = extract_layer_info(quote_info)
-                    elif search_compile:
-                        #todo search optimizer and loss function
-                        break
-
-                '''
-                next_line = line_index
-                layer_index = 0
-                layers = {}
-                while True:
-                    next_line += 1
-                    if py_in_lines[next_line][2]:
-                        if py_in_lines[next_line][1] >= py_in_lines[line_index][1]:
-                            search_add = re.search('\.add\(', py_in_lines[next_line][0])
-                            if search_add:
-                                layer_index += 1
-                                quote_start = (next_line, search_add.span()[1])
-                                quote_info = get_quote_info(py_in_lines, quote_start)
-                                layers[layer_index] = extract_layer_info(quote_info)
-                            search_compile = re.search('\.compile\(', py_in_lines[next_line][0])
-                            if search_compile:
-                                #todo search optimizer and loss function
-                                pass
-                        else:
+                if model_found:
+                    layer_index = 0
+                    layers = {}
+                    for idx in range(model_start_index + 1, model_end_index + 1):
+                        search_add = re.search('\.add\(', py_in_lines[idx][0])
+                        search_compile = re.search('\.compile\(', py_in_lines[idx][0])
+                        if search_add:
+                            layer_index += 1
+                            quote_start = (idx, search_add.span()[1])
+                            quote_info = get_quote_info(py_in_lines, quote_start)
+                            layers[layer_index] = extract_layer_info(quote_info)
+                        elif search_compile:
+                            #todo search optimizer and loss function
                             break
-                    else:
-                        continue
-                '''
-                model_detail[model_num]['layers'] = layers
-                #todo: add optimizer and loss function
-                line_index += 1
+                    model_detail[model_num]['layers'] = layers
+                    #todo: add optimizer and loss function
+                    line_index = model_end_index + 1
+                else:
+                    line_index += 1
 
 '''
 #main
