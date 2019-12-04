@@ -278,11 +278,14 @@ def extract_architecture_from_python(repo_full_name):
     #'''
     
     ''' for maunal test
-    py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
+    #py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
     #py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
-    #py_files_list = ["https://raw.githubusercontent.com/nagyben/CarND-Behavioral-Cloning-P3/f044a3a1eff5b30171b763eb2eda0b2dba19469e/train.py"] #test file
+    py_files_list = ["https://raw.githubusercontent.com/nagyben/CarND-Behavioral-Cloning-P3/f044a3a1eff5b30171b763eb2eda0b2dba19469e/train.py"] #test file
     '''
     
+    model_num = 0
+    model_detail = {}
+
     for raw_file_url in py_files_list:
         raw_file = request.urlopen(raw_file_url).read().decode("utf-8")
         
@@ -291,9 +294,6 @@ def extract_architecture_from_python(repo_full_name):
         if lib_search:
             for lib in lib_search:
                 libs_set.add(lib.group(2))
-
-        model_num = 0
-        model_detail = {}
         
         if ('keras' in libs_set) or ('Keras' in libs_set):
             py_in_lines, line_num = split_py(raw_file)
