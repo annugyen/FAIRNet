@@ -375,6 +375,7 @@ if __name__ == '__main__':
     for repo in repo_url_dict:
         repo_url = repo_url_dict[repo]
         repo_full_name = get_repo_full_name(repo_url)
+        model_detail = extract_architecture_from_python(repo_full_name)
 #'''
 '''
 #test
