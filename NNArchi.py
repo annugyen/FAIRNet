@@ -55,10 +55,12 @@ def extract_layer_info(quote_info):
     extracted_layer_info = {}
     search_type = re.search('\(', quote_info)
     layer_type = quote_info[:search_type.span()[0]]
-    #extracted_layer_info['type'] = layer_type
+    
     #todo: classify different layer type
+    
     if layer_type == 'Dense':
         layer_shape = quote_info[search_type.span()[1]:re.search('\)|,', quote_info).span()[0]]
+        
         search_activation = re.search('activation=', quote_info)
         layer_activation = 'linear'
         if search_activation:
@@ -72,6 +74,7 @@ def extract_layer_info(quote_info):
             if layer_activation.lower() == 'none':
                 layer_activation = 'linear'
         extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'activation':layer_activation, 'info':quote_info}
+    
     elif layer_type == 'Dropout' or layer_type == 'SpatialDropout1D' or layer_type == 'SpatialDropout2D' or layer_type == 'SpatialDropout3D':
         search_rate = re.search('rate=', quote_info)
         if search_rate:
@@ -79,9 +82,11 @@ def extract_layer_info(quote_info):
         else:
             layer_rate = quote_info[re.search('\(', quote_info).span()[1]:re.search('\)|,', quote_info).span()[0]]
         extracted_layer_info = {'type':layer_type, 'rate':layer_rate, 'info':quote_info}
+    
     elif layer_type == 'Flatten':
         layer_shape = 'Same with former layer'
         extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'info':quote_info}
+    
     elif layer_type == 'Conv1D' or layer_type == 'Conv2D' or layer_type == 'SeparableConv1D' or layer_type == 'SeparableConv2D': #todo add conv3d
         search_filters = re.search('filters=', quote_info)
         layer_filters = 'Unknown'
@@ -92,6 +97,7 @@ def extract_layer_info(quote_info):
                 layer_filters = quote_info[layer_filters_start:layer_filters_start + search_comma.span()[0]]
             else:
                 layer_filters = quote_info[layer_filters_start:-1]
+        
         search_kernel_size = re.search('kernel_size=', quote_info)
         layer_kernel_size = 'Unknown'
         if search_kernel_size:
@@ -101,6 +107,7 @@ def extract_layer_info(quote_info):
                 layer_kernel_size = quote_info[layer_kernel_size_start:layer_kernel_size_start + search_comma.span()[0]]
             else:
                 layer_kernel_size = quote_info[layer_kernel_size_start:-1]
+        
         search_strides = re.search('strides=', quote_info)
         if layer_type[-2:] =='2D':
             layer_strides = '(1, 1)'
@@ -113,6 +120,7 @@ def extract_layer_info(quote_info):
                 layer_strides = quote_info[layer_strides_start:layer_strides_start + search_comma.span()[0]]
             else:
                 layer_strides = quote_info[layer_strides_start:-1]
+        
         search_padding = re.search('padding=', quote_info)
         layer_padding = 'valid'
         if search_padding:
@@ -122,6 +130,7 @@ def extract_layer_info(quote_info):
                 layer_padding = 'causal'
             elif search_same:
                 layer_padding = 'same'
+        
         search_activation = re.search('activation=', quote_info)
         layer_activation = 'linear'
         if search_activation:
@@ -135,11 +144,93 @@ def extract_layer_info(quote_info):
             if layer_activation.lower() == 'none':
                 layer_activation = 'linear'
         extracted_layer_info = {'type':layer_type, 'filters':layer_filters, 'kernel_size':layer_kernel_size, 'strides':layer_strides, 'padding':layer_padding, 'activation':layer_activation, 'info':quote_info}
+    
     elif layer_type == 'MaxPooling1D' or layer_type == 'MaxPooling2D' or layer_type == 'MaxPooling3D' or layer_type == 'AveragePooling1D' or layer_type == 'AveragePooling2D' or layer_type == 'AveragePooling3D': #todo add other pooling
-        pass
+        search_pool_size = re.search('pool_size=', quote_info)
+        if layer_type[-2:] == '3D':
+            layer_pool_size = '(2, 2, 2)'
+        elif layer_type[-2:] == '2D':
+            layer_pool_size = '(2, 2)'
+        else:
+            layer_pool_size = '2'
+        if search_pool_size:
+            layer_pool_size_start = search_pool_size.span()[1]
+            search_comma = re.search(',', quote_info[layer_pool_size_start:])
+            if search_comma:
+                layer_pool_size = quote_info[layer_pool_size_start:layer_pool_size_start + search_comma.span()[0]]
+            else:
+                layer_pool_size = quote_info[layer_pool_size_start:-1]
+        
+        search_strides = re.search('strides=', quote_info)
+        layer_strides = layer_pool_size
+        if search_strides:
+            layer_strides_start = search_strides.span()[1]
+            search_comma = re.search(',', quote_info[layer_strides_start:])
+            if search_comma:
+                layer_strides = quote_info[layer_strides_start:layer_strides_start + search_comma.span()[0]]
+            else:
+                layer_strides = quote_info[layer_strides_start:-1]
+            if layer_strides.lower() == 'none':
+                layer_strides = layer_pool_size
+        
+        search_padding = re.search('padding=', quote_info)
+        layer_padding = 'valid'
+        if search_padding:
+            search_causal = re.search('causal', quote_info)
+            search_same = re.search('same', quote_info)
+            if search_causal:
+                layer_padding = 'causal'
+            elif search_same:
+                layer_padding = 'same'
+        extracted_layer_info = {'type':layer_type, 'pool_size':layer_pool_size, 'strides':layer_strides, 'padding':layer_padding, 'info':quote_info}
     else:
         extracted_layer_info = {'type':layer_type, 'info':quote_info}
     return extracted_layer_info
+
+def extract_compile_info(quote_info):
+    loss, optimizer, metrics = 'None', 'None', 'None'
+    search_loss = re.search('loss=', quote_info)
+    if search_loss:
+        loss_start = search_loss.span()[1]
+        search_comma = re.search(',', quote_info[loss_start:])
+        if search_comma:
+            loss = quote_info[loss_start:loss_start + search_comma.span()[0]]
+        else:
+            loss = quote_info[loss_start:-1]
+        loss = re.sub('\'', '', loss)
+
+    search_optimizer = re.search('optimizer=', quote_info)
+    if search_optimizer:
+        optimizer_start = search_optimizer.span()[1]
+        search_comma = re.search(',', quote_info[optimizer_start:])
+        if search_comma:
+            optimizer = quote_info[optimizer_start:optimizer_start + search_comma.span()[0]]
+        else:
+            optimizer = quote_info[optimizer_start:-1]
+        optimizer = re.sub('\'', '', optimizer)
+
+    search_metrics = re.search('metrics=', quote_info)
+    if search_metrics:
+        metrics_start = search_metrics.span()[1]
+        metrics_end = metrics_start + 1
+        if quote_info[metrics_start] == '[':
+            if_metrics_end = 1
+            while if_metrics_end != 0:
+                if quote_info[metrics_end] == '[':
+                    if_metrics_end += 1
+                elif quote_info[metrics_end] == ']':
+                    if_metrics_end -= 1
+                metrics_end += 1
+        elif quote_info[metrics_start] == '{':
+            if_metrics_end = 1
+            while if_metrics_end != 0:
+                if quote_info[metrics_end] == '{':
+                    if_metrics_end += 1
+                elif quote_info[metrics_end] == '}':
+                    if_metrics_end -= 1
+                metrics_end += 1
+        metrics = quote_info[metrics_start:metrics_end]
+    return loss, optimizer, metrics
 
 def extract_architecture_from_python(repo_full_name):
 
@@ -169,7 +260,7 @@ def extract_architecture_from_python(repo_full_name):
         quote_info = re.sub(' ', '', quote_info)
         return quote_info
     
-    '''
+    #'''
     search_terms = ['"import+keras"', '"from+keras"', 'keras.models', 'keras.layers', 'keras.utils', 'tf.keras.models.Sequential()']
     query_search_terms = '+OR+'.join(search_terms)
     search_url = 'https://api.github.com/search/code?limit=100&per_page=100&q=' + query_search_terms + '+in:file+extension:py+repo:' + repo_full_name
@@ -184,10 +275,13 @@ def extract_architecture_from_python(repo_full_name):
             py_files_list.append(raw_url)
     else:
         print('Keras may not be used.')
-    '''
-    #py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
-    py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
+    #'''
+    
+    ''' for maunal test
+    py_files_list = ["https://raw.githubusercontent.com/jw15/wildflower-finder/master/src/cnn_resnet50.py"] #test file
+    #py_files_list = ["https://raw.githubusercontent.com/francarranza/genre_classification/master/train.py"] #test file
     #py_files_list = ["https://raw.githubusercontent.com/nagyben/CarND-Behavioral-Cloning-P3/f044a3a1eff5b30171b763eb2eda0b2dba19469e/train.py"] #test file
+    '''
     
     for raw_file_url in py_files_list:
         raw_file = request.urlopen(raw_file_url).read().decode("utf-8")
@@ -210,24 +304,25 @@ def extract_architecture_from_python(repo_full_name):
                 search_apps = re.search('applications\.', py_in_lines[line_index][0])
                 model_found = False
 
-                if search_apps:
-                    temp_line = py_in_lines[line_index][0]
-                    app_type_start = search_apps.span()[1]
-                    app_type = temp_line[app_type_start:app_type_start + re.search('\(', temp_line[app_type_start:]).span()[0]]
-                    if app_type in keras_apps_list:
+                if py_in_lines[line_index][2]:
+                    if search_apps:
+                        temp_line = py_in_lines[line_index][0]
+                        app_type_start = search_apps.span()[1]
+                        app_type = temp_line[app_type_start:app_type_start + re.search('\(', temp_line[app_type_start:]).span()[0]]
+                        if app_type in keras_apps_list:
+                            model_num += 1
+                            model_detail[model_num] = {}
+                            model_found = True
+                            model_detail[model_num]['type'] = app_type
+                            model_start_index = line_index
+                        #else: #todo this case should be further considerd
+                            #model_detail[model_num]['type'] = 'Unknown base model: ' + app_type
+                    elif search_seq:
+                        model_start_index = line_index
                         model_num += 1
                         model_detail[model_num] = {}
+                        model_detail[model_num]['type'] = 'Sequential'
                         model_found = True
-                        model_detail[model_num]['type'] = app_type
-                        model_start_index = line_index
-                    else:
-                        model_detail[model_num]['type'] = 'Unknown base model: ' + app_type
-                elif search_seq:
-                    model_start_index = line_index
-                    model_num += 1
-                    model_detail[model_num] = {}
-                    model_detail[model_num]['type'] = 'Sequential'
-                    model_found = True
                 
                 model_end_index = model_start_index
                 while model_found:
@@ -241,24 +336,34 @@ def extract_architecture_from_python(repo_full_name):
                 if model_found:
                     layer_index = 0
                     layers = {}
+                    model_loss, model_optimizer, model_metrics = 'None', 'None', 'None'
                     for idx in range(model_start_index + 1, model_end_index + 1):
                         search_add = re.search('\.add\(', py_in_lines[idx][0])
                         search_compile = re.search('\.compile\(', py_in_lines[idx][0])
-                        if search_add:
-                            layer_index += 1
-                            quote_start = (idx, search_add.span()[1])
-                            quote_info = get_quote_info(py_in_lines, quote_start)
-                            layers[layer_index] = extract_layer_info(quote_info)
-                        elif search_compile:
-                            #todo search optimizer and loss function
-                            break
+                        if py_in_lines[idx][2]:
+                            if search_add:
+                                layer_index += 1
+                                quote_start = (idx, search_add.span()[1])
+                                quote_info = get_quote_info(py_in_lines, quote_start)
+                                layers[layer_index] = extract_layer_info(quote_info)
+                            elif search_compile:
+                                #todo search optimizer and loss function
+                                quote_start = (idx, search_compile.span()[1])
+                                quote_info = get_quote_info(py_in_lines, quote_start)
+                                model_loss, model_optimizer, model_metrics = extract_compile_info(quote_info)
+                                break
                     model_detail[model_num]['layers'] = layers
                     #todo: add optimizer and loss function
+                    model_detail[model_num]['loss'] = model_loss
+                    model_detail[model_num]['optimizer'] = model_optimizer
+                    model_detail[model_num]['metrics'] = model_metrics
                     line_index = model_end_index + 1
                 else:
                     line_index += 1
+    
+    return model_detail
 
-'''
+#'''
 #main
 if __name__ == '__main__':
     data_path = './files.json'
@@ -270,7 +375,9 @@ if __name__ == '__main__':
     for repo in repo_url_dict:
         repo_url = repo_url_dict[repo]
         repo_full_name = get_repo_full_name(repo_url)
+#'''
 '''
 #test
 repo_full_name = 'francarranza/genre_classification'
 extract_architecture_from_python(repo_full_name)
+'''
