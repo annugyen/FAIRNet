@@ -1,5 +1,7 @@
 import json
+import random
 import re
+import time
 from urllib import request
 
 import pandas as pd
@@ -54,7 +56,10 @@ def split_py(py_file):
 def extract_layer_info(quote_info):
     extracted_layer_info = {}
     search_type = re.search('\(', quote_info)
-    layer_type = quote_info[:search_type.span()[0]]
+    if search_type:
+        layer_type = quote_info[:search_type.span()[0]]
+    else:
+        layer_type = quote_info
     
     #todo: classify different layer type
     
@@ -234,6 +239,11 @@ def extract_compile_info(quote_info):
 
 def extract_architecture_from_python(repo_full_name):
 
+    Token_list = ['1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a',
+                  'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1',
+                  'd10d26ffe911ab0d569b5ddc5c777f26b9ef057a',
+                  '66b9970c6a9d24d61e167cda2f3997219bae3447']
+
     def get_quote_info(py_in_lines, quote_start):
         quote_num = 1
         quote_line = quote_start[0]
@@ -264,8 +274,9 @@ def extract_architecture_from_python(repo_full_name):
     search_terms = ['"import+keras"', '"from+keras"', 'keras.models', 'keras.layers', 'keras.utils', 'tf.keras.models.Sequential()']
     query_search_terms = '+OR+'.join(search_terms)
     search_url = 'https://api.github.com/search/code?limit=100&per_page=100&q=' + query_search_terms + '+in:file+extension:py+repo:' + repo_full_name
-    Token_1 = '1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a'
-    headers_1 = {'Authorization':'token ' + Token_1}
+    #Token_1 = '1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a'
+    Token_idx = random.randint(0,len(Token_list) - 1)
+    headers_1 = {'Authorization':'token ' + Token_list[Token_idx]}
     url_request = request.Request(search_url, headers = headers_1)
     response = request.urlopen(url_request)
     html = response.read()
@@ -290,8 +301,9 @@ def extract_architecture_from_python(repo_full_name):
     model_detail = {}
 
     for raw_file_url in py_files_list:
-        Token_2 = 'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1'
-        headers_2 = {'Authorization':'token ' + Token_2}
+        #Token_2 = 'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1'
+        Token_idx = random.randint(0,len(Token_list) - 1)
+        headers_2 = {'Authorization':'token ' + Token_list[Token_idx]}
         raw_file_request = request.Request(raw_file_url, headers = headers_2)
         raw_file = request.urlopen(raw_file_request).read().decode("utf-8")
         
@@ -307,14 +319,14 @@ def extract_architecture_from_python(repo_full_name):
             model_start_index = 0
             while line_index < line_num:
                 search_seq = re.search('Sequential\(', py_in_lines[line_index][0])
-                search_apps = re.search('applications\.', py_in_lines[line_index][0])
+                search_apps = re.search('applications\.(.*?)\(', py_in_lines[line_index][0])
                 model_found = False
 
                 if py_in_lines[line_index][2]:
                     if search_apps:
-                        temp_line = py_in_lines[line_index][0]
-                        app_type_start = search_apps.span()[1]
-                        app_type = temp_line[app_type_start:app_type_start + re.search('\(', temp_line[app_type_start:]).span()[0]]
+                        #temp_line = py_in_lines[line_index][0]
+                        #app_type_start = search_apps.span()[1]
+                        app_type = search_apps.group(1)
                         if app_type in keras_apps_list:
                             model_num += 1
                             model_detail[model_num] = {}
@@ -378,10 +390,13 @@ if __name__ == '__main__':
     file.close()
     df = pd.DataFrame(data)
     repo_url_dict = data['repo_url']
-    for repo in repo_url_dict:
+    for idx, repo in enumerate(repo_url_dict):
         repo_url = repo_url_dict[repo]
         repo_full_name = get_repo_full_name(repo_url)
         model_detail = extract_architecture_from_python(repo_full_name)
+        print('%d: finish' % idx)
+        time.sleep(1)
+
 #'''
 '''
 #test
