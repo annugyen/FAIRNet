@@ -264,7 +264,10 @@ def extract_architecture_from_python(repo_full_name):
     search_terms = ['"import+keras"', '"from+keras"', 'keras.models', 'keras.layers', 'keras.utils', 'tf.keras.models.Sequential()']
     query_search_terms = '+OR+'.join(search_terms)
     search_url = 'https://api.github.com/search/code?limit=100&per_page=100&q=' + query_search_terms + '+in:file+extension:py+repo:' + repo_full_name
-    response = request.urlopen(search_url)
+    Token_1 = '1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a'
+    headers_1 = {'Authorization':'token ' + Token_1}
+    url_request = request.Request(search_url, headers = headers_1)
+    response = request.urlopen(url_request)
     html = response.read()
     json_data = json.loads(html.decode("utf-8"))
 
@@ -287,7 +290,10 @@ def extract_architecture_from_python(repo_full_name):
     model_detail = {}
 
     for raw_file_url in py_files_list:
-        raw_file = request.urlopen(raw_file_url).read().decode("utf-8")
+        Token_2 = 'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1'
+        headers_2 = {'Authorization':'token ' + Token_2}
+        raw_file_request = request.Request(raw_file_url, headers = headers_2)
+        raw_file = request.urlopen(raw_file_request).read().decode("utf-8")
         
         libs_set = set()
         lib_search = re.finditer('^(from|import)\s(\w+)', raw_file, re.MULTILINE)
