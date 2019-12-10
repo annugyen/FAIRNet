@@ -32,6 +32,10 @@ def get_repo_full_name(repo_url):
     return repo_full_name
 
 def split_py(py_file):
+    '''
+    Split .py file into lines and information of each line(number of space at beginning and if this line is a valid code).
+    Delete notes using #, " and ' at same time.
+    '''
 
     #delete notes using """
     while re.search('(\"\"\")([\s\S]*?)(\"\"\")', py_file):
@@ -60,6 +64,9 @@ def split_py(py_file):
     return py_in_lines, line_num
 
 def extract_layer_info(quote_info):
+    '''
+    Extract information of different layers.
+    '''
     extracted_layer_info = {}
     search_type = re.search('\(', quote_info)
     if search_type:
@@ -199,6 +206,10 @@ def extract_layer_info(quote_info):
     return extracted_layer_info
 
 def extract_compile_info(quote_info):
+    '''
+    Extract information of loss, optimizer and metrics
+    '''
+
     loss, optimizer, metrics = 'None', 'None', 'None'
     search_loss = re.search('loss=', quote_info)
     if search_loss:
@@ -244,6 +255,9 @@ def extract_compile_info(quote_info):
     return loss, optimizer, metrics
 
 def extract_architecture_from_python(repo_full_name):
+    '''
+    Extract architecture of NNs from .py file in a repo.
+    '''
 
     Token_list = ['1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a',
                   'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1',
@@ -251,6 +265,10 @@ def extract_architecture_from_python(repo_full_name):
                   '66b9970c6a9d24d61e167cda2f3997219bae3447']
 
     def get_quote_info(py_in_lines, quote_start):
+        '''
+        Get information in quotes, including multiple lines.
+        '''
+
         quote_num = 1
         quote_line = quote_start[0]
         quote_postion = quote_start[1]
