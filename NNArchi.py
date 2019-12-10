@@ -26,7 +26,7 @@ keras_apps_list = ['Xception',
                    'NASNetLarge']
 
 def get_repo_full_name(repo_url):
-    name_pattern = re.compile('github.com/', re.I)
+    name_pattern = re.compile('github\.com/', re.I)
     name_search = name_pattern.search(repo_url)
     repo_full_name = repo_url[name_search.end():]
     return repo_full_name
@@ -34,8 +34,12 @@ def get_repo_full_name(repo_url):
 def split_py(py_file):
 
     #delete notes using """
-    while re.search('(\"\"\")(.*?)(\"\"\")', py_file):
+    while re.search('(\"\"\")([\s\S]*?)(\"\"\")', py_file):
         py_file = re.sub('(\"\"\")([\s\S]*?)(\"\"\")', '', py_file)
+    
+    #delete notes using '''
+    while re.search('(\'\'\')([\s\S]*?)(\'\'\')', py_file):
+        py_file = re.sub('(\'\'\')([\s\S]*?)(\'\'\')', '', py_file)
     
     code_split = py_file.split('\n')
     line_num = len(code_split)
@@ -43,11 +47,13 @@ def split_py(py_file):
     for i, line in enumerate(code_split):
         space_num = 0
         is_code = True
-        space_search = re.search('[^\s]', line)
+        space_search = re.search('\S', line)
         if space_search:
             space_num = space_search.span()[0]
             if line[space_num] == '#':
                 is_code = False
+                line = ''
+                space_num = 0
         else:
             is_code = False
         py_in_lines[i] = (line, space_num, is_code)
@@ -80,7 +86,7 @@ def extract_layer_info(quote_info):
                 layer_activation = 'linear'
         extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'activation':layer_activation, 'info':quote_info}
     
-    elif layer_type == 'Dropout' or layer_type == 'SpatialDropout1D' or layer_type == 'SpatialDropout2D' or layer_type == 'SpatialDropout3D':
+    elif layer_type in ['Dropout', 'SpatialDropout1D', 'SpatialDropout2D', 'SpatialDropout3D']:
         search_rate = re.search('rate=', quote_info)
         if search_rate:
             layer_rate = quote_info[search_rate.span()[1]:re.search('\)|,', quote_info).span()[0]]
@@ -92,7 +98,7 @@ def extract_layer_info(quote_info):
         layer_shape = 'Same with former layer'
         extracted_layer_info = {'type':layer_type, 'shape':layer_shape, 'info':quote_info}
     
-    elif layer_type == 'Conv1D' or layer_type == 'Conv2D' or layer_type == 'SeparableConv1D' or layer_type == 'SeparableConv2D': #todo add conv3d
+    elif layer_type in ['Conv1D', 'Conv2D', 'SeparableConv1D', 'SeparableConv2D']: #todo add conv3d
         search_filters = re.search('filters=', quote_info)
         layer_filters = 'Unknown'
         if search_filters:
@@ -150,7 +156,7 @@ def extract_layer_info(quote_info):
                 layer_activation = 'linear'
         extracted_layer_info = {'type':layer_type, 'filters':layer_filters, 'kernel_size':layer_kernel_size, 'strides':layer_strides, 'padding':layer_padding, 'activation':layer_activation, 'info':quote_info}
     
-    elif layer_type == 'MaxPooling1D' or layer_type == 'MaxPooling2D' or layer_type == 'MaxPooling3D' or layer_type == 'AveragePooling1D' or layer_type == 'AveragePooling2D' or layer_type == 'AveragePooling3D': #todo add other pooling
+    elif layer_type in ['MaxPooling1D' or layer_type == 'MaxPooling2D', 'MaxPooling3D', 'AveragePooling1D', 'AveragePooling2D', 'AveragePooling3D']: #todo add other pooling
         search_pool_size = re.search('pool_size=', quote_info)
         if layer_type[-2:] == '3D':
             layer_pool_size = '(2, 2, 2)'
@@ -365,13 +371,11 @@ def extract_architecture_from_python(repo_full_name):
                                 quote_info = get_quote_info(py_in_lines, quote_start)
                                 layers[layer_index] = extract_layer_info(quote_info)
                             elif search_compile:
-                                #todo search optimizer and loss function
                                 quote_start = (idx, search_compile.span()[1])
                                 quote_info = get_quote_info(py_in_lines, quote_start)
                                 model_loss, model_optimizer, model_metrics = extract_compile_info(quote_info)
                                 break
                     model_detail[model_num]['layers'] = layers
-                    #todo: add optimizer and loss function
                     model_detail[model_num]['loss'] = model_loss
                     model_detail[model_num]['optimizer'] = model_optimizer
                     model_detail[model_num]['metrics'] = model_metrics
