@@ -130,3 +130,11 @@ dmypy.json
 
 # own folder
 /screenshot
+/h5example
+
+#vs and vscode
+/.vs
+/.vscode
+*.sln
+*.code-workspace
+*.pyproj

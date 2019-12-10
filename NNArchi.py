@@ -156,7 +156,7 @@ def extract_layer_info(quote_info):
                 layer_activation = 'linear'
         extracted_layer_info = {'type':layer_type, 'filters':layer_filters, 'kernel_size':layer_kernel_size, 'strides':layer_strides, 'padding':layer_padding, 'activation':layer_activation, 'info':quote_info}
     
-    elif layer_type in ['MaxPooling1D' or layer_type == 'MaxPooling2D', 'MaxPooling3D', 'AveragePooling1D', 'AveragePooling2D', 'AveragePooling3D']: #todo add other pooling
+    elif layer_type in ['MaxPooling1D', 'MaxPooling2D', 'MaxPooling3D', 'AveragePooling1D', 'AveragePooling2D', 'AveragePooling3D']: #todo add other pooling
         search_pool_size = re.search('pool_size=', quote_info)
         if layer_type[-2:] == '3D':
             layer_pool_size = '(2, 2, 2)'
