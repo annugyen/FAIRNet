@@ -117,7 +117,7 @@ def get_func_call_paras_kws(root, has_ext_paras = False, **kwarg):
             func_call_kws_dict[func_call_kw_key] = func_call_kw_value
     return func_call_paras_list, func_call_kws_dict
 
-def extract_architecture_from_python_ast(code_str):
+def extract_architecture_from_python_ast(code_str, model_num):
     code_ast = ast.parse(code_str)
     code_json = export_json(code_ast)
     code_xml = json2xml.Json2xml(readfromstring(code_json)).to_xml()
@@ -125,12 +125,12 @@ def extract_architecture_from_python_ast(code_str):
     #print(code_xml)
     with open('./code_xml.xml', 'w') as f:
         f.write(code_xml)
-    file.close()
+    f.close()
 
     code_tree = etree.fromstring(code_xml)
 
     models = {}
-    model_num = 0
+    #model_num = 0
 
     seqs = code_tree.xpath('//func[id = "Sequential"]')
     if len(seqs) > 0:
@@ -243,5 +243,6 @@ if __name__ == '__main__':
     with open(file_path, 'r') as file:
         code_str = file.read()
     file.close()
-    models_archi = extract_architecture_from_python_ast(code_str)
+    model_num = 0
+    models_archi = extract_architecture_from_python_ast(code_str, model_num)
     pass
