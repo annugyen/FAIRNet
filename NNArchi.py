@@ -29,9 +29,13 @@ def extract_architecture_from_python(repo_full_name):
     Token_idx = random.randint(0,len(Token_list) - 1)
     headers_1 = {'Authorization':'token ' + Token_list[Token_idx]}
     url_request = request.Request(search_url, headers = headers_1)
-    response = request.urlopen(url_request)
-    html = response.read()
-    json_data = json.loads(html.decode("utf-8"))
+    try:
+        response = request.urlopen(url_request)
+    except Exception as e:
+        json_data = {}
+    else:
+        html = response.read()
+        json_data = json.loads(html.decode("utf-8"))
 
     py_files_list = []
     if 'items' in json_data:
@@ -70,6 +74,8 @@ if __name__ == '__main__':
     for idx, repo in enumerate(repo_url_dict):
         repo_url = repo_url_dict[repo]
         repo_full_name = get_repo_full_name(repo_url)
+        if idx == 19:
+            a = 1
         models_archi = extract_architecture_from_python(repo_full_name)
         print('%d: finish' % idx)
         time.sleep(1)
