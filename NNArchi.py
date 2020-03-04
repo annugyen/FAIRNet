@@ -74,8 +74,6 @@ if __name__ == '__main__':
     for idx, repo in enumerate(repo_url_dict):
         repo_url = repo_url_dict[repo]
         repo_full_name = get_repo_full_name(repo_url)
-        if idx == 19:
-            a = 1
         models_archi = extract_architecture_from_python(repo_full_name)
         print('%d: finish' % idx)
         time.sleep(1)
