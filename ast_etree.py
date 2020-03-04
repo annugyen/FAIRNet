@@ -109,7 +109,10 @@ def get_func_call_paras_kws(root, has_ext_paras = False, **kwarg):
             elif func_call_kw_value_type == 'List':
                 func_call_kw_value = rebuild_list(func_call_kw.find('value'))
             elif func_call_kw_value_type == 'Call':
-                func_call_kw_value = func_call_kw.xpath('child::value/func/id')[0].text
+                if len(func_call_kw.xpath('child::value/func/id')) > 0:
+                    func_call_kw_value = func_call_kw.xpath('child::value/func/id')[0].text
+                elif func_call_kw.xpath('child::value/func/ast_type')[0].text == 'Attribute':
+                    func_call_kw_value = rebuild_attr(func_call_kw.xpath('child::value/func')[0])
             elif func_call_kw_value_type == 'NameConstant':
                 func_call_kw_value = func_call_kw.xpath('child::value/value')[0].text
             else:
@@ -200,18 +203,19 @@ def extract_architecture_from_python_ast(code_str, model_num):
                     value = func_detail.find('value')
                     expr_func = value.find('func')
                     if expr_func.find('attr').text == 'add' and expr_func.xpath('child::value/id')[0].text == seq_name:
-                        layer_num += 1
-                        layer_name = value.xpath('child::args/item/func/id')[0].text
-                        layer = {}
-                        layer['name'] = layer_name
-                        layer_root = value.xpath('child::args/item')[0]
-                        #layer_paras = value.xpath('child::args/item/args/item')
-                        layer_paras_list = []
-                        layer_kws_dict = {}
-                        layer_paras_list, layer_kws_dict = get_func_call_paras_kws(layer_root, func_paras_kws_dict = func_paras_kws_dict, func_defaults_dict = func_defaults_dict)
-                        layer['parameters'] = layer_paras_list
-                        layer = {**layer, **layer_kws_dict}
-                        layers[layer_num] = layer
+                        if len(value.xpath('child::args/item/func/id')) > 0:
+                            layer_num += 1
+                            layer_name = value.xpath('child::args/item/func/id')[0].text
+                            layer = {}
+                            layer['name'] = layer_name
+                            layer_root = value.xpath('child::args/item')[0]
+                            #layer_paras = value.xpath('child::args/item/args/item')
+                            layer_paras_list = []
+                            layer_kws_dict = {}
+                            layer_paras_list, layer_kws_dict = get_func_call_paras_kws(layer_root, func_paras_kws_dict = func_paras_kws_dict, func_defaults_dict = func_defaults_dict)
+                            layer['parameters'] = layer_paras_list
+                            layer = {**layer, **layer_kws_dict}
+                            layers[layer_num] = layer
                     elif expr_func.find('attr').text == 'compile' and expr_func.xpath('child::value/id')[0].text == seq_name:
                         is_model_compiled = True
                         compile_root = expr_func.xpath('..')[0]

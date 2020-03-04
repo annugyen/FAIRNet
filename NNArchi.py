@@ -62,7 +62,7 @@ def extract_architecture_from_python(repo_full_name):
     return models_archi
 
 if __name__ == '__main__':
-    data_path = './files.json'
+    data_path = './filtered_data.json'
     with open(data_path, 'r') as file:
         json_data = json.load(file)
     file.close()
