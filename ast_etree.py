@@ -126,6 +126,10 @@ def extract_architecture_from_python_ast(code_str, model_num):
     code_xml = json2xml.Json2xml(readfromstring(code_json)).to_xml()
 
     #print(code_xml)
+    with open('./code_str.py', 'w') as f:
+        f.write(code_str)
+    f.close()
+
     with open('./code_xml.xml', 'w') as f:
         f.write(code_xml)
     f.close()
@@ -169,11 +173,14 @@ def extract_architecture_from_python_ast(code_str, model_num):
                 func_xpath = 'descendant::func[id="' + func_name + '"]'
                 func_call = code_tree.xpath(func_xpath)
                 is_func_called = False
-                if len(func_call) > 0:
+                if len(func_call) > 0: #todo verify each call
                     is_func_called = True
                     func_call_root = func_call[0].xpath('..')[0]
                     func_call_paras_list, func_call_kws_dict = get_func_call_paras_kws(func_call_root, has_ext_paras = True)
-                    model_name = ((func_call_root.xpath('..')[0]).xpath('child::targets/item')[0]).xpath('descendant::id')[0].text
+                    try:
+                        model_name = ((func_call_root.xpath('..')[0]).xpath('child::targets/item')[0]).xpath('descendant::id')[0].text
+                    except Exception as e:
+                        model_name = 'not_found'
                 else:
                     func_call_paras_list = []
                     func_call_kws_dict = {}

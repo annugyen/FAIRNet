@@ -29,9 +29,13 @@ def extract_architecture_from_python(repo_full_name):
     Token_idx = random.randint(0,len(Token_list) - 1)
     headers_1 = {'Authorization':'token ' + Token_list[Token_idx]}
     url_request = request.Request(search_url, headers = headers_1)
-    response = request.urlopen(url_request)
-    html = response.read()
-    json_data = json.loads(html.decode("utf-8"))
+    try:
+        response = request.urlopen(url_request)
+    except Exception as e:
+        json_data = {}
+    else:
+        html = response.read()
+        json_data = json.loads(html.decode("utf-8"))
 
     py_files_list = []
     if 'items' in json_data:
