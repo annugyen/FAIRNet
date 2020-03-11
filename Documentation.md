@@ -1,4 +1,12 @@
 # NNArchi Documentation
+<!-- TOC -->
+
+- [NNArchi Documentation](#nnarchi-documentation)
+    - [Task](#task)
+    - [Background](#background)
+    - [Reference](#reference)
+
+<!-- /TOC -->
 ## Task
 Extract neural network architectures (based on ***Keras***[<sup>1</sup>](#refer-anchor)) from source codes (Python)
 ## Background
