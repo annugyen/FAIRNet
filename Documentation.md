@@ -6,8 +6,11 @@
     - [Background](#background)
     - [Files and Methods](#files-and-methods)
         - [`NNArchi.py`](#nnarchipy)
-            - [get_repo_full_name(repo_url)](#get_repo_full_namerepo_url)
-            - [extract_architecture_from_python(repo_full_name)](#extract_architecture_from_pythonrepo_full_name)
+            - [get_repo_full_name(*repo_url*)](#get_repo_full_namerepo_url)
+            - [extract_architecture_from_python(*repo_full_name*)](#extract_architecture_from_pythonrepo_full_name)
+        - [`ast_etree.py`](#ast_etreepy)
+            - [rebuild_list(*root*)](#rebuild_listroot)
+            - [list_to_tuple(*tuple_list*)](#list_to_tupletuple_list)
     - [Extraction Steps](#extraction-steps)
     - [Reference](#reference)
 
@@ -18,7 +21,7 @@ Extract neural network architectures (based on ***Keras***[<sup>1</sup>](#refer-
 Names of public repositories containing projects in the field of neural networks are stored in given datasets (in json files). Each repository contains several models of neural network. What to be extracted is architectures of these models and their parameters. To complete this task, a general method is generated using Python ast odule (Abstract Syntax Trees).
 >The ast module helps Python applications to process trees of the Python abstract syntax grammar. The abstract syntax itself might change with each Python release; this module helps to find out programmatically what the current grammar looks like.[<sup>2</sup>](#refer-anchor)  
 
-Sequential model is used in most models based on Keras. For example[<sup>3</sup>](#refer-anchor)  :
+Sequential model is used in most models based on Keras. For example[<sup>3</sup>](#refer-anchor):
 ```
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
@@ -54,7 +57,9 @@ def func(i):
 
 a= func(1)
 ```
-result of conversion:
+<details>  
+<summary><b>result of conversion:</b></summary>
+
 ```
 <?xml version="1.0" ?>
 <all>
@@ -184,26 +189,47 @@ result of conversion:
 		</item>
 	</body>
 </all>
-```
-As shown above, functions and their parameters can be extracted by parsing etrees. Therefore, functions like ***Sequential()***, ***add()***, ***compile()*** and their parameters can also be extracted using this approach.
+```  
+
+</details>  
+
+As conversion result shown above, functions and their parameters can be extracted by parsing etrees. Therefore, functions like ***Sequential()***, ***add()***, ***compile()*** and their parameters can also be extracted using this approach.
 
 To prase xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***xpath***.
 
 ## Files and Methods
 ### `NNArchi.py`
-#### get_repo_full_name(repo_url)
-Return full url of repository. repo_url is repository's name stored in dataset.
+#### get_repo_full_name(*repo_url*)
+Return full name of repository. *repo_url* is repository's url stored in dataset.
 ```
->>> get_repo_full_name('AntelopeCub/NNArchi')
-'github.com/AntelopeCub/NNArchi'
+>>> repo_url = 'github.com/francarranza/genre_classification'
+>>> get_repo_full_name('repo_url')
+'francarranza/genre_classification'
+```  
+
+#### extract_architecture_from_python(*repo_full_name*)
+Extract architectures of neural network models from .py files in a repository with *repo_full_name*.  
 ```
-#### extract_architecture_from_python(repo_full_name)
-Extract architectures of neural network models from .py files in a repository.
+>>> repo_full_name = 'francarranza/genre_classification'
+>>> extract_architecture_from_python(repo_full_name)
+{1:{'compile_info': {'loss': 'keras.losses.catego...ssentropy', 'metrics': [...], 'optimizer': 'sgd'}, 'layers': {1: {...}, 2: {...}, 3: {...}, 4: {...}, 5: {...}, 6: {...}, 7: {...}, 8: {...}, 9: {...}, ...}}}
+```  
+### `ast_etree.py`
+#### rebuild_list(*root*)
+Rebuild list from it's etree structure, start postion is *root*.  
+Take *francarranza/genre_classification* as an example. *root* corresponds to the tuple in *'def genre_classification_baby(input_shape=(128, 130), nb_genres=10):'* (`train.py`, line 55). *code_etree* is previously mentioned conversion result of `train.py`.
 ```
->>> extract_architecture_from_python('mcculzac/Volkswagen')
-{1:{'compile_info': {'loss': 'categorical_crossentropy', 'metrics': [...], 'optimizer': 'rmsprop'}, 'layers': {1: {...}, 2: {...}, 3: {...}, 4: {...}}}
-2:{'compile_info': {'loss': 'categorical_crossentropy', 'metrics': [...], 'optimizer': 'adam'}, 'layers': {1: {...}, 2: {...}}}}
+>>> root = code_etree.xpath('/all/body/item[22]/args/defaults/item[1]')
+>>> rebuild_list(root)
+[128, 130]
+```  
+If *root* points to a tuple, the result should be further converted by using [**list_to_tuple(*tuple_list*)**](#list_to_tuple(tuple_list)).
+#### list_to_tuple(*tuple_list*)
+Convert a list of tuple (*tuple_list*) into tuple.  
 ```
+>>> tuple_list = [128, 130]
+(128, 130)
+```  
 ## Extraction Steps
 1.  
 2.  
