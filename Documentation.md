@@ -4,6 +4,11 @@
 - [NNArchi Documentation](#nnarchi-documentation)
     - [Task](#task)
     - [Background](#background)
+    - [Files and Methods](#files-and-methods)
+        - [`NNArchi.py`](#nnarchipy)
+            - [get_repo_full_name(repo_url)](#get_repo_full_namerepo_url)
+            - [extract_architecture_from_python(repo_full_name)](#extract_architecture_from_pythonrepo_full_name)
+    - [Extraction Steps](#extraction-steps)
     - [Reference](#reference)
 
 <!-- /TOC -->
@@ -182,7 +187,27 @@ result of conversion:
 ```
 As shown above, functions and their parameters can be extracted by parsing etrees. Therefore, functions like ***Sequential()***, ***add()***, ***compile()*** and their parameters can also be extracted using this approach.
 
-To prase xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used.
+To prase xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***xpath***.
+
+## Files and Methods
+### `NNArchi.py`
+#### get_repo_full_name(repo_url)
+Return full url of repository. repo_url is repository's name stored in dataset.
+```
+>>> get_repo_full_name('AntelopeCub/NNArchi')
+'github.com/AntelopeCub/NNArchi'
+```
+#### extract_architecture_from_python(repo_full_name)
+Extract architectures of neural network models from .py files in a repository.
+```
+>>> extract_architecture_from_python('mcculzac/Volkswagen')
+{1:{'compile_info': {'loss': 'categorical_crossentropy', 'metrics': [...], 'optimizer': 'rmsprop'}, 'layers': {1: {...}, 2: {...}, 3: {...}, 4: {...}}}
+2:{'compile_info': {'loss': 'categorical_crossentropy', 'metrics': [...], 'optimizer': 'adam'}, 'layers': {1: {...}, 2: {...}}}}
+```
+## Extraction Steps
+1.  
+2.  
+3.  
 
 <div id="refer-anchor"></div>
 
