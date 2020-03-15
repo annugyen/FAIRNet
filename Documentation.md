@@ -11,6 +11,9 @@
         - [`ast_etree.py`](#ast_etreepy)
             - [rebuild_list(*root*)](#rebuild_listroot)
             - [list_to_tuple(*tuple_list*)](#list_to_tupletuple_list)
+            - [rebuild_attr(*root*)](#rebuild_attrroot)
+            - [get_func_call_paras_kws(*root, has_ext_paras = False,* ***kwarg*)](#get_func_call_paras_kwsroot-has_ext_paras--false-kwarg)
+            - [extract_architecture_from_python_ast(*code_str, model_num*)](#extract_architecture_from_python_astcode_str-model_num)
     - [Extraction Steps](#extraction-steps)
     - [Reference](#reference)
 
@@ -195,12 +198,12 @@ a= func(1)
 
 As conversion result shown above, functions and their parameters can be extracted by parsing etrees. Therefore, functions like ***Sequential()***, ***add()***, ***compile()*** and their parameters can also be extracted using this approach.
 
-To prase xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***xpath***.
+To parse xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***xpath***.
 
 ## Files and Methods
 ### `NNArchi.py`
 #### get_repo_full_name(*repo_url*)
-Return full name of repository. *repo_url* is repository's url stored in dataset.
+Return full name of repository. *`repo_url`* is repository's url stored in dataset.
 ```
 >>> repo_url = 'github.com/francarranza/genre_classification'
 >>> get_repo_full_name('repo_url')
@@ -208,7 +211,7 @@ Return full name of repository. *repo_url* is repository's url stored in dataset
 ```  
 
 #### extract_architecture_from_python(*repo_full_name*)
-Extract architectures of neural network models from .py files in a repository with *repo_full_name*.  
+Extract architectures of neural network models from .py files in a repository with *`repo_full_name`*.  
 ```
 >>> repo_full_name = 'francarranza/genre_classification'
 >>> extract_architecture_from_python(repo_full_name)
@@ -216,19 +219,45 @@ Extract architectures of neural network models from .py files in a repository wi
 ```  
 ### `ast_etree.py`
 #### rebuild_list(*root*)
-Rebuild list from it's etree structure, start postion is *root*.  
-Take *francarranza/genre_classification* as an example. *root* corresponds to the tuple in *'def genre_classification_baby(input_shape=(128, 130), nb_genres=10):'* (`train.py`, line 55). *code_etree* is previously mentioned conversion result of `train.py`.
+Rebuild list from its etree structure, start position is *`root`*.  
+Take *francarranza/genre_classification* as an example. *`root`* corresponds to the tuple in `def genre_classification_baby(input_shape=(128, 130), nb_genres=10):` (in `train.py`, line 55). *code_etree* is previously mentioned conversion result of `train.py`.
 ```
 >>> root = code_etree.xpath('/all/body/item[22]/args/defaults/item[1]')
 >>> rebuild_list(root)
 [128, 130]
 ```  
-If *root* points to a tuple, the result should be further converted by using [**list_to_tuple(*tuple_list*)**](#list_to_tuple(tuple_list)).
+If *`root`* points to a tuple, the result should be further converted by using [**list_to_tuple(*tuple_list*)**](#list_to_tuple(tuple_list)).
 #### list_to_tuple(*tuple_list*)
 Convert a list of tuple (*tuple_list*) into tuple.  
 ```
 >>> tuple_list = [128, 130]
+>>> list_to_tuple(tuple_list)
 (128, 130)
+```  
+#### rebuild_attr(*root*)
+Rebuild full attribute name from its etree structure, start position is *`root`*.  
+Take *francarranza/genre_classification* as an example. *`root`* corresponds to the value of *`loss`* in `model.compile(loss=keras.losses.categorical_crossentropy, optimizer=sgd, metrics=['accuracy'])` (in `train.py`, line 169-172).
+```
+>>> root = code_etree.xpath('/all/body/item[33]/value/keywords/item[1]/value')
+>>> rebuild_attr(root)
+'keras.losses.categorical_crossentropy'
+```  
+#### get_func_call_paras_kws(*root, has_ext_paras = False,* ***kwarg*)  
+Extract values of parameters and keywords of a function, when it is called, from its etree structure, start position is *`root`*. Return a list of parameters' values *`func_call_paras_list`* and a dictionary of keywords' values *`func_call_kws_dict`*.  
+Take *francarranza/genre_classification* as an example. *`root`* corresponds to `model = genre_classification_baby(input_shape=(128, 388), nb_genres=5)` (in `train.py`, line 156-157). 
+```
+>>> func_call_root = code_etree.xpath('/all/body/item[29]/value')
+>>> get_func_call_paras_kws(func_call_root, has_ext_paras = True)
+[] #func_call_paras_list
+{'input_shape': (128, 388), 'nb_genres': '5'} #func_call_kws_dict
+```  
+#### extract_architecture_from_python_ast(*code_str, model_num*)
+Extract architectures of neural networks from python ast etree of source code. *`code_str`* is `string` of source code and *`model_num`* is the number of models already found in the repository.
+Take *francarranza/genre_classification* as an example. *`code_str`* is `string` of `train.py`.
+```
+model_num = 0
+extract_architecture_from_python_ast(code_str, model_num)
+{1:{'compile_info': {'loss': 'keras.losses.catego...ssentropy', 'metrics': [...], 'optimizer': 'sgd'}, 'layers': {1: {...}, 2: {...}, 3: {...}, 4: {...}, 5: {...}, 6: {...}, 7: {...}, 8: {...}, 9: {...}, ...}}}
 ```  
 ## Extraction Steps
 1.  
