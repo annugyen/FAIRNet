@@ -198,7 +198,7 @@ a= func(1)
 
 As conversion result shown above, functions and their parameters can be extracted by parsing etrees. Therefore, functions like ***Sequential()***, ***add()***, ***compile()*** and their parameters can also be extracted using this approach.
 
-To parse xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***xpath***.
+To parse xml etrees, another site-package ***lxml***[<sup>6</sup>](#refer-anchor) is used, which is efficient and supports ***XPath***.
 
 ## Files and Methods
 ### `NNArchi.py`
@@ -219,16 +219,16 @@ Extract architectures of neural network models from .py files in a repository wi
 ```  
 ### `ast_etree.py`
 #### rebuild_list(*root*)
-Rebuild list from its etree structure, start position is *`root`*.  
+Rebuild `list` from its etree structure, start position is *`root`*.  
 Take *francarranza/genre_classification* as an example. *`root`* corresponds to the tuple in `def genre_classification_baby(input_shape=(128, 130), nb_genres=10):` (in `train.py`, line 55). *code_etree* is previously mentioned conversion result of `train.py`.
 ```
 >>> root = code_etree.xpath('/all/body/item[22]/args/defaults/item[1]')
 >>> rebuild_list(root)
 [128, 130]
 ```  
-If *`root`* points to a tuple, the result should be further converted by using [**list_to_tuple(*tuple_list*)**](#list_to_tuple(tuple_list)).
+If *`root`* points to a `tuple`, the result should be further converted by using [**list_to_tuple(*tuple_list*)**](#list_to_tuple(tuple_list)).
 #### list_to_tuple(*tuple_list*)
-Convert a list of tuple (*tuple_list*) into tuple.  
+Convert a `tuple` in `list` form (*tuple_list*) into `tuple`.  
 ```
 >>> tuple_list = [128, 130]
 >>> list_to_tuple(tuple_list)
@@ -243,7 +243,7 @@ Take *francarranza/genre_classification* as an example. *`root`* corresponds to 
 'keras.losses.categorical_crossentropy'
 ```  
 #### get_func_call_paras_kws(*root, has_ext_paras = False,* ***kwarg*)  
-Extract values of parameters and keywords of a function, when it is called, from its etree structure, start position is *`root`*. Return a list of parameters' values *`func_call_paras_list`* and a dictionary of keywords' values *`func_call_kws_dict`*.  
+Extract values of parameters and keywords of a function, when it is called, from its etree structure, start position is *`root`*. Return a `list` of parameters' values *`func_call_paras_list`* and a `dictionary` of keywords' values *`func_call_kws_dict`*.  
 Take *francarranza/genre_classification* as an example. *`root`* corresponds to `model = genre_classification_baby(input_shape=(128, 388), nb_genres=5)` (in `train.py`, line 156-157). 
 ```
 >>> func_call_root = code_etree.xpath('/all/body/item[29]/value')
@@ -252,17 +252,25 @@ Take *francarranza/genre_classification* as an example. *`root`* corresponds to 
 {'input_shape': (128, 388), 'nb_genres': '5'} #func_call_kws_dict
 ```  
 #### extract_architecture_from_python_ast(*code_str, model_num*)
-Extract architectures of neural networks from python ast etree of source code. *`code_str`* is `string` of source code and *`model_num`* is the number of models already found in the repository.
-Take *francarranza/genre_classification* as an example. *`code_str`* is `string` of `train.py`.
+Extract architectures of neural networks from python ast etree of source code. *`code_str`* is source code in `string` form and *`model_num`* is the number of models already found in the repository.
+Take *francarranza/genre_classification* as an example. *`code_str`* is `train.py` in `string` form.
 ```
 model_num = 0
 extract_architecture_from_python_ast(code_str, model_num)
 {1:{'compile_info': {'loss': 'keras.losses.catego...ssentropy', 'metrics': [...], 'optimizer': 'sgd'}, 'layers': {1: {...}, 2: {...}, 3: {...}, 4: {...}, 5: {...}, 6: {...}, 7: {...}, 8: {...}, 9: {...}, ...}}}
 ```  
 ## Extraction Steps
-1.  
-2.  
-3.  
+1. Load data set and collect names of repositories. Complete full url of repository using [`get_repo_full_name(repo_url)`](#get_repo_full_namerepo_url)  
+2. Using Github API to search .py files, which imports `keras`, in a repository. Load these .py files as `string`.  
+3. Convert source code in `string` form into `ast` in form of XML-etree.  
+4. Parse XML-etree to search `Sequential()`. Once found, extract the name of sequential model with target of assignment and check ancestor nodes of current nodes using `XPath` method `xpath('ancestor::item[ast_type = "FunctionDef"]')` to find definition of custom function.  
+5. If definition of custom fuction exists, which means model is built inside a function, extract default values of parameters and keywords. Model-root is beginning of function.  
+6. Check if this custom function is called. If called, extract values of parameters and keywords. Replace the default values with them.  
+7. If definition of custom fuction doesn't exist, which means model is directly built, model-root is beginning of whole source code.  
+8. Parse etree from model-root. If expression is found while its `id` equals name of sequential model (in Step 4) and its `attr` equals `add`, which means keras method `add()` is found and a new layer is added to model, extract its name and its values of parameters and keywords.  
+9. If expression's `id` equals `compile`, which means keras method `compile()` is found and the model is compiled, extract its values of keywords.  
+10. After parsing this part of etree, check if model is compiled. If not, parse whole etree to find `compile()` corresponding to this model and extract its values of keywords. If nothing is found, it means model is not compiled.  
+11. Return architecture of model by integrating information of layes and `compile` from previous steps 8-10.
 
 <div id="refer-anchor"></div>
 
