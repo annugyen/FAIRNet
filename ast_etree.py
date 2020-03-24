@@ -243,7 +243,7 @@ def extract_architecture_from_python_ast(code_str, model_num):
                             break
                 else:
                     models[model_num]['compile_info'] = {}
-    return models
+    return models, model_num
 
 if __name__ == '__main__':
     #file_path = './francarranza_genre_classification.py'
