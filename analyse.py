@@ -1,6 +1,6 @@
 import json
 
-result_path = 'result_filtered_data.json'
+result_path = './result_data.json'
 
 with open(result_path, 'r') as file:
     results_data = json.load(file)

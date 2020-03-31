@@ -121,15 +121,16 @@ def get_func_call_paras_kws(root, has_ext_paras = False, **kwarg):
     return func_call_paras_list, func_call_kws_dict
 
 def extract_architecture_from_python_ast(code_str, model_num):
+
+    with open('./code_str.py', 'w') as f:
+        f.write(code_str)
+    f.close()
+    
     code_ast = ast.parse(code_str)
     code_json = export_json(code_ast)
     code_xml = json2xml.Json2xml(readfromstring(code_json)).to_xml()
 
     #print(code_xml)
-    with open('./code_str.py', 'w') as f:
-        f.write(code_str)
-    f.close()
-
     with open('./code_xml.xml', 'w') as f:
         f.write(code_xml)
     f.close()
