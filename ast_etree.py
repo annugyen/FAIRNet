@@ -65,15 +65,15 @@ def rebuild_lambda_args(root):
     return lambda_arg_list
 
 op_dict = {'Add': '+',
-            'Sub': '-',
-            'Mult': '*',
-            'Div': '/',
-            'Pow': '**'}
+           'Sub': '-',
+           'Mult': '*',
+           'Div': '/',
+           'Pow': '**'}
 op_lv_dict = {'Add': 0,
-                'Sub': 0,
-                'Mult': 1,
-                'Div': 1,
-                'Pow': 2}
+              'Sub': 0,
+              'Mult': 1,
+              'Div': 1,
+              'Pow': 2}
 def rebuild_lambda_expr(root):
     lambda_expr = ''
     ast_type = root.find('ast_type').text
