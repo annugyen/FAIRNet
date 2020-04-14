@@ -57,6 +57,58 @@ def rebuild_attr(root):
     rebuilt_attr = '.'.join(reversed(rebuilt_attr_list))
     return rebuilt_attr
 
+def rebuild_lambda_args(root):
+    lambda_arg_list = []
+    lambda_args = root.xpath('child::args/args/item')
+    for arg in lambda_args:
+        lambda_arg_list.append(arg.find('arg').text)
+    return lambda_arg_list
+
+op_dict = {'Add': '+',
+            'Sub': '-',
+            'Mult': '*',
+            'Div': '/',
+            'Pow': '**'}
+op_lv_dict = {'Add': 0,
+                'Sub': 0,
+                'Mult': 1,
+                'Div': 1,
+                'Pow': 2}
+def rebuild_lambda_expr(root):
+    lambda_expr = ''
+    ast_type = root.find('ast_type').text
+    if ast_type == 'BinOp':
+        op = root.xpath('child::op/ast_type')[0].text
+        op_lv = op_lv_dict[op]
+        left = root.find('left')
+        right = root.find('right')
+        left_type = left.find('ast_type').text
+        right_type = right.find('ast_type').text
+        if left_type == 'Name':
+            lambda_expr = left.find('id').text
+        elif left_type == 'Num':
+            lambda_expr = left.xpath('child::n/n')[0].text
+        elif left_type == 'BinOp':
+            left_op = left.xpath('child::op/ast_type')[0].text
+            left_op_lv = op_lv_dict[left_op]
+            if op_lv > left_op_lv:
+                lambda_expr = '(' + rebuild_lambda_expr(left) + ')'
+            else:
+                lambda_expr = rebuild_lambda_expr(left)
+        lambda_expr += ' ' + op_dict[op] + ' '
+        if right_type == 'Name':
+            lambda_expr += right.find('id').text
+        elif right_type == 'Num':
+            lambda_expr += right.xpath('child::n/n')[0].text
+        elif right_type == 'BinOp':
+            right_op = right.xpath('child::op/ast_type')[0].text
+            right_op_lv = op_lv_dict[right_op]
+            if op_lv > right_op_lv:
+                lambda_expr += '(' + rebuild_lambda_expr(right) + ')'
+            else:
+                lambda_expr += rebuild_lambda_expr(right)
+    return lambda_expr
+
 def get_func_call_paras_kws(root, has_ext_paras = False, **kwarg):
     if not has_ext_paras:
         func_paras_kws_dict = kwarg['func_paras_kws_dict']
@@ -66,10 +118,14 @@ def get_func_call_paras_kws(root, has_ext_paras = False, **kwarg):
     if len(func_call_paras) > 0:
         for func_call_para in func_call_paras:
             func_call_para_type = func_call_para.find('ast_type').text
-            if func_call_para_type == 'lambda':
-                pass #todo lambda
+            if func_call_para_type == 'Lambda':
+                lambda_args = rebuild_lambda_args(func_call_para)
+                lambda_expr = rebuild_lambda_expr(func_call_para.find('body'))
+                func_call_paras_list.append({'arguments': lambda_args, 'expression': lambda_expr})
             elif func_call_para_type == 'Num':
                 func_call_paras_list.append(func_call_para.xpath('child::n/n')[0].text)
+            elif func_call_para_type == 'Str':
+                func_call_paras_list.append(func_call_para.find('s').text)
             elif func_call_para_type == 'Name':
                 func_call_para_name = func_call_para.find('id').text
                 if has_ext_paras:
@@ -249,9 +305,9 @@ def extract_architecture_from_python_ast(code_str, model_num):
 if __name__ == '__main__':
     #file_path = './francarranza_genre_classification.py'
     #file_path = './mcculzac_Volkswagen.py'
-    #file_path = './nagyben_CarND-Behavioral-Cloning-P3.py'
+    file_path = './nagyben_CarND-Behavioral-Cloning-P3.py'
     #file_path = './XintongHao_Self-Driving-Car-Behavioral-Cloning.py'
-    file_path = './jw15_wildflower-finder.py'
+    #file_path = './jw15_wildflower-finder.py'
     with open(file_path, 'r') as file:
         code_str = file.read()
     file.close()
