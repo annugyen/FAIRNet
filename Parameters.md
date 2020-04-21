@@ -27,5 +27,5 @@ model = genre_classification_baby(input_shape=(128, 388), nb_genres=5)
 
 ### Parameters cannot be displayed
 1. External parameters, which are defined in other parts of code or even in other files;
-2. Paramaters defined with expression;
-3. Parameters defined in `class`
+2. Paramaters defined with expression, e.g. `w * 4` and `w = 16` in some cases;
+3. Parameters defined in `class`.
