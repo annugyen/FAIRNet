@@ -12,6 +12,8 @@
             - [rebuild_list(*root*)](#rebuild_listroot)
             - [list_to_tuple(*tuple_list*)](#list_to_tupletuple_list)
             - [rebuild_attr(*root*)](#rebuild_attrroot)
+            - [rebuild_lambda_args(*root*)](#rebuild_lambda_argsroot)
+            - [rebuild_lambda_expr(*root*)](#rebuild_lambda_exprroot)
             - [get_func_call_paras_kws(*root, has_ext_paras = False,* ***kwarg*)](#get_func_call_paras_kwsroot-has_ext_paras--false-kwarg)
             - [extract_architecture_from_python_ast(*code_str, model_num*)](#extract_architecture_from_python_astcode_str-model_num)
     - [Extraction Steps](#extraction-steps)
@@ -242,6 +244,24 @@ Take *francarranza/genre_classification* as an example. *`root`* corresponds to 
 >>> rebuild_attr(root)
 'keras.losses.categorical_crossentropy'
 ```  
+#### rebuild_lambda_args(*root*)
+Extract arguments of lambda expressions, start position is *`root`*.
+Return a `list` of lambda expression's arguments *`lambda_arg_list`*.
+Take *nagyben/CarND-Behavioral-Cloning-P3* as an example. *`root`* corresponds to `model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=input_shape))` (in `train.py`, line 90).
+```
+>>>lambda_root = code_etree.xpath('/all/body/item[12]/body/item[2]/value/args/item/args/item')
+>>>rebuild_lambda_args(lambda_root)
+['x']
+```
+#### rebuild_lambda_expr(*root*)
+Extract lambda expressions, start position is *`root`*.
+Return a `str` of lambda expression *`lambda_expr`*.
+Take *nagyben/CarND-Behavioral-Cloning-P3* as an example. *`root`* corresponds to `model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=input_shape))` (in `train.py`, line 90).
+```
+>>>lambda_root = code_etree.xpath('/all/body/item[12]/body/item[2]/value/args/item/args/item/body')
+>>>rebuild_lambda_expr(lambda_root)
+'x / 255.0 - 0.5'
+```
 #### get_func_call_paras_kws(*root, has_ext_paras = False,* ***kwarg*)  
 Extract values of parameters and keywords of a function, when it is called, from its etree structure, start position is *`root`*. Return a `list` of parameters' values *`func_call_paras_list`* and a `dictionary` of keywords' values *`func_call_kws_dict`*.  
 Take *francarranza/genre_classification* as an example. *`root`* corresponds to `model = genre_classification_baby(input_shape=(128, 388), nb_genres=5)` (in `train.py`, line 156-157). 
