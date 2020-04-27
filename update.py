@@ -55,10 +55,7 @@ if __name__ == '__main__':
             results[idx] = result_dict
             print('%d: finish' % idx)
             time.sleep(0.5)
-        if len(results) == 10:
-            break
     result_json = json.dumps(results, indent = 4, separators = (',', ': '))
     with open(result_path, 'w') as file:
         file.write(result_json)
     file.close()
-    a = 1
