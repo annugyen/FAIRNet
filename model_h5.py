@@ -4,11 +4,13 @@ import random
 import re
 import string
 import sys
+from contextlib import closing
 from urllib import request
 
 import pandas as pd
-from keras.engine.saving import load_model
+import tensorflow as tf
 from keras.backend import clear_session
+from keras.engine.saving import load_model
 
 from githubtokens import Token_list
 
@@ -59,14 +61,19 @@ def extract_architecture_from_h5(model_url):
     Token_idx = random.randint(0, len(Token_list) - 1)
     headers = {'Authorization':'token ' + Token_list[Token_idx]}
     h5_request = request.Request(model_url_raw, headers = headers)
+    h5_response = None
+    h5_read = None
     try:
-        h5_response = request.urlopen(h5_request)
+        with closing(request.urlopen(h5_request)) as h5_response:
+            h5_read = h5_response.read()
     except Exception as e:
         print('Download Error')
     else:
         with open(temp_file_path, 'wb') as f:
-            f.write(h5_response.read())
+            f.write(h5_read)
         f.close()
+        h5_response = None
+        h5_read = None
 
     #path, header = request.urlretrieve(model_url_raw, temp_file_path)
 
@@ -152,6 +159,7 @@ def extract_architecture_from_h5(model_url):
         os.remove(temp_file_path)  # Delete temporary file
         # print(layers)
         clear_session()
+        tf.compat.v1.reset_default_graph()
         return extracted_architecture, loss_function, optimizer, metrics, layers
 
 if __name__ == '__main__':
