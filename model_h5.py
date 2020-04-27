@@ -8,6 +8,9 @@ from urllib import request
 
 import pandas as pd
 from keras.engine.saving import load_model
+from keras.backend import clear_session
+
+from githubtokens import Token_list
 
 neuronStoplist = ['add', 'dot', 'subtract', 'multiply', 'average', 'maximum', 'minimum', 'concatenate']
 
@@ -53,7 +56,19 @@ def extract_architecture_from_h5(model_url):
     # print(model_url_raw)
     temp_file_name = 'temp_file_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
     temp_file_path = os.path.join(ROOT_DIR, 'h5example/' + temp_file_name + '.h5')
-    path, header = request.urlretrieve(model_url_raw, temp_file_path)
+    Token_idx = random.randint(0, len(Token_list) - 1)
+    headers = {'Authorization':'token ' + Token_list[Token_idx]}
+    h5_request = request.Request(model_url_raw, headers = headers)
+    try:
+        h5_response = request.urlopen(h5_request)
+    except Exception as e:
+        print('Download Error')
+    else:
+        with open(temp_file_path, 'wb') as f:
+            f.write(h5_response.read())
+        f.close()
+
+    #path, header = request.urlretrieve(model_url_raw, temp_file_path)
 
     # print(path)
     #sys.stdout.write('\rLoad model from path ...')
@@ -64,11 +79,12 @@ def extract_architecture_from_h5(model_url):
     loss_function = None
     optimizer = None
     layers = None
+    metrics = None
 
     # print('\n\n\nModel:\n')
     try:
         # Try loading model architecture from file
-        model = load_model(path)
+        model = load_model(temp_file_path)
     except ValueError as ve:
         print('Value error occurred. %s' % ve.args)
     except SystemError as se:
@@ -102,7 +118,7 @@ def extract_architecture_from_h5(model_url):
                         nr_neurons = int(layer.input_shape[1] * layer.input_shape[2])
                     elif len(layer.input_shape) == 4:
                         nr_neurons = int(layer.input_shape[1] * layer.input_shape[2] * layer.input_shape[3])
-            except AttributeError as ae:
+            except Exception as e:
                 nr_neurons = '?'  # Value assigned if extraction fails
 
             try:
@@ -126,11 +142,17 @@ def extract_architecture_from_h5(model_url):
         except AttributeError as ae:
             # print('Has no optimizer function.')
             pass
+        
+        try:
+            metrics = model.metrics_names
+        except AttributeError as ae:
+            pass
 
     finally:
         os.remove(temp_file_path)  # Delete temporary file
         # print(layers)
-        return extracted_architecture, loss_function, optimizer, layers
+        clear_session()
+        return extracted_architecture, loss_function, optimizer, metrics, layers
 
 if __name__ == '__main__':
     #model_url = 'https://github.com/nagyben/CarND-Behavioral-Cloning-P3/blob/f044a3a1eff5b30171b763eb2eda0b2dba19469e/model.h5' #index 1 fixed

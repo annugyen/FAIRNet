@@ -5,12 +5,8 @@ import time
 from urllib import request
 
 from ast_etree import extract_architecture_from_python_ast
+from githubtokens import Token_list
 
-global Token_list
-Token_list = ['1498e12f29400f246eb5b2cf1c6ccfb1a4970c4a',
-              'f24e286bab8a40e1995c1f1dcacd6e31e6816ac1',
-              'd10d26ffe911ab0d569b5ddc5c777f26b9ef057a',
-              '66b9970c6a9d24d61e167cda2f3997219bae3447']
 
 def get_repo_full_name(repo_url):
     name_pattern = re.compile('github\.com/', re.I)
@@ -29,7 +25,7 @@ def extract_architecture_from_python(repo_full_name):
     search_terms = ['"import+keras"', '"from+keras"', 'keras.models', 'keras.layers', 'keras.utils', 'tf.keras.models.Sequential()']
     query_search_terms = '+OR+'.join(search_terms)
     search_url = 'https://api.github.com/search/code?limit=100&per_page=100&q=' + query_search_terms + '+in:file+extension:py+repo:' + repo_full_name
-    Token_idx = random.randint(0,len(Token_list) - 1)
+    Token_idx = random.randint(0, len(Token_list) - 1)
     headers_1 = {'Authorization':'token ' + Token_list[Token_idx]}
     url_request = request.Request(search_url, headers = headers_1)
     try:
@@ -101,7 +97,7 @@ if __name__ == '__main__':
             result_dict['models'] = models_archi
         results[idx] = result_dict
         print('%d: finish' % idx)
-        time.sleep(1)
+        time.sleep(0.5)
     #"""
     result_json = json.dumps(results, indent = 4, separators = (',', ': '))
     with open(result_path, 'w') as file:
