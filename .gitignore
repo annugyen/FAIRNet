@@ -128,9 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# own folder
+# own folder and files
 /screenshot
 /h5example
+*.json
 
 #vs and vscode
 /.vs

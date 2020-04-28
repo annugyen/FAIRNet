@@ -1,6 +1,6 @@
 import json
 
-result_path = './result_data.json'
+result_path = './result_data_h5_merged.json'
 
 with open(result_path, 'r') as file:
     results_data = json.load(file)
@@ -8,6 +8,7 @@ file.close
 
 empty_list = []
 error_list = []
+'''
 lstm_list = []
 no_keras_list = []
 for idx in range(len(results_data)):
@@ -25,4 +26,13 @@ for idx in range(len(results_data)):
                 if layer['name'] == 'LSTM':
                     lstm_list.append(results_data[str(idx)]['repo_full_name'])
         lstm_list = list(set(lstm_list))
+'''
+for key in results_data:
+    if not results_data[key]['models']:
+        empty_list.append(results_data[key]['repo_full_name'])
+    elif results_data[key]['models'] == 'Error':
+        error_list.append(results_data[key]['repo_full_name'])
+    else:
+        pass
 print('Analysis finish')
+a = 1
