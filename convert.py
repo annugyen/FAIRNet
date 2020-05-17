@@ -165,13 +165,14 @@ def convert_owl(data_json, result_json, owl_path):
                 
                 g.add((repo, nno.hasModel, model_URI)) #connect model to repo
 
+                '''
                 #test
                 test_node = BNode(URIRef(base_url + repo_full_name + '_' + model_name + '_test'))
                 g.add((test_node, RDF.type, nno.Dense))
                 g.add((test_node, RDFS.label, Literal('test_layer')))
                 g.add((model_URI, nno.hasLayer, test_node))
-
                 '''
+
                 layers = model['layers']
                 for layer_idx in layers:
                     layer = layers[layer_idx]
@@ -205,7 +206,7 @@ def convert_owl(data_json, result_json, owl_path):
                         print('activation %s is not in set.' % activation_function_URI)
                         
                     g.add((model_URI, nno.hasLayer, layer_URI)) #connect layer to model
-                '''
+                    
                 if model.get('compile_info'):
                     compile_info = model['compile_info']
                     if compile_info.get('loss'):
