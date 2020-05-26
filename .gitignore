@@ -131,6 +131,7 @@ dmypy.json
 # local folder and files
 /screenshot
 /h5example
+/SearchEngine
 *.json
 *.xml
 *.owl
