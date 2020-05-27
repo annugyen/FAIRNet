@@ -64,8 +64,8 @@ def extract_architecture_from_python(repo_full_name):
 
 if __name__ == '__main__':
     data_path = './data.json'
-    result_path = './result.json'
-    results = {}
+    #result_path = './result.json'
+    #results = {}
     with open(data_path, 'r') as file:
         data_json = json.load(file)
     file.close()
@@ -85,21 +85,30 @@ if __name__ == '__main__':
         print('%d: finish' % idx)
         time.sleep(1)
     """
-    #"""
-    for idx in range(len(data_json)):
-        repo_full_name = data_json[idx]['repo_full_name']
-        result_dict = {'repo_full_name': repo_full_name}
-        try:
-            models_archi = extract_architecture_from_python(repo_full_name)
-        except Exception as e:
-            result_dict['models'] = 'Error'
-        else:
-            result_dict['models'] = models_archi
-        results[idx] = result_dict
-        print('%d: finish' % idx)
-        time.sleep(0.5)
-    #"""
-    result_json = json.dumps(results, indent = 4, separators = (',', ': '))
-    with open(result_path, 'w') as file:
-        file.write(result_json)
-    file.close()
+    max_len = len(data_json)
+    block_size = 3000
+    block_num = max_len // block_size + 1
+    for i in range(block_num):
+        result_path = './result_data_code_part' + str('%02d' % i) + '.json'
+        results = {}
+        for j in range(block_size):
+            idx = i * block_size + j
+            repo_full_name = data_json[idx]['repo_full_name']
+            result_dict = {'repo_full_name': repo_full_name}
+            try:
+                models_archi = extract_architecture_from_python(repo_full_name)
+            except Exception as e:
+                result_dict['models'] = 'Error'
+            else:
+                result_dict['models'] = models_archi
+            results[idx] = result_dict
+            print('%d: finish' % idx)
+            time.sleep(0.1)
+            if idx == max_len - 1:
+                break
+        result_json = json.dumps(results, indent = 4, separators = (',', ': '))
+        with open(result_path, 'w') as file:
+            file.write(result_json)
+        file.close()
+        if idx == max_len - 1:
+            break
