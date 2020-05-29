@@ -12,6 +12,7 @@ error_list = []
 lambda_list = []
 activi_list = []
 no_keras_list = []
+valid_list = []
 for idx in range(len(results_data)):
     if not results_data[str(idx)]['models']:
         empty_list.append(results_data[str(idx)]['repo_full_name'])
@@ -30,6 +31,9 @@ for idx in range(len(results_data)):
                     activi_list.append(results_data[str(idx)]['repo_full_name'])
         lambda_list = list(set(lambda_list))
         activi_list = list(set(activi_list))
+    models = results_data[str(idx)]['models']
+    if isinstance(models, dict) and len(models) > 0:
+        valid_list.append(idx)
 
 '''
 for key in results_data:
