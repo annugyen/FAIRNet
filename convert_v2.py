@@ -125,74 +125,77 @@ def convert_owl(data_json, result_json, owl_path):
         idx = int(key)
         result = result_json[key]
         data = data_json[idx]
-        repo_full_name = result['repo_full_name']
-        
-        owner = 'https://github.com/' + data['repo_owner']
-        
-        repo = URIRef(base_url + repo_full_name)
 
-        if 'nn_type' in data:
-            nn_type = data['nn_type']
-        elif 'suggested_type' in data:
-            nn_type = data['suggested_type']
-        else:
-            nn_type = ['nn']
+        if result.get('models') and isinstance(result['models'], dict) and len(result['models']) > 0:
 
-        if 'recurrent_type' in nn_type:
-            g.add((repo, RDF.type, nno.RecurrentNeuralNetwork))
-        elif 'conv_type' in nn_type:
-            g.add((repo, RDF.type, nno.ConvolutionalNeuralNetwork))
-        elif 'feed_forward_type' in nn_type:
-            g.add((repo, RDF.type, nno.FeedForwardNeuralNetwork))
-        else:
-            g.add((repo, RDF.type, nno.NeuralNetwork))
+            repo_full_name = result['repo_full_name']
+            
+            owner = 'https://github.com/' + data['repo_owner']
+            
+            repo = URIRef(base_url + repo_full_name)
 
-        g.add((repo, RDFS.label, Literal(repo_full_name)))
+            if 'nn_type' in data:
+                nn_type = data['nn_type']
+            elif 'suggested_type' in data:
+                nn_type = data['suggested_type']
+            else:
+                nn_type = ['nn']
 
-        if data.get('repo_desc'):
-            g.add((repo, dc.description, Literal(data['repo_desc'])))
-        
-        if data.get('readme_text'):
-            g.add((repo, dc.description, Literal(data['readme_text'])))
+            if 'recurrent_type' in nn_type:
+                g.add((repo, RDF.type, nno.RecurrentNeuralNetwork))
+            elif 'conv_type' in nn_type:
+                g.add((repo, RDF.type, nno.ConvolutionalNeuralNetwork))
+            elif 'feed_forward_type' in nn_type:
+                g.add((repo, RDF.type, nno.FeedForwardNeuralNetwork))
+            else:
+                g.add((repo, RDF.type, nno.NeuralNetwork))
 
-        if owner.startswith('http'):
-            g.add((repo, dc.creator, URIRef(owner)))
+            g.add((repo, RDFS.label, Literal(repo_full_name)))
 
-        if data.get('repo_url').startswith('http'):
-            g.add((repo, nno.hasRepositoryLink, URIRef(data['repo_url'])))
+            if data.get('repo_desc'):
+                g.add((repo, dc.description, Literal(data['repo_desc'])))
+            
+            if data.get('readme_text'):
+                g.add((repo, dc.description, Literal(data['readme_text'])))
 
-        if data.get('repo_last_mod'):
-            g.add((repo, dc.modified, Literal(data['repo_last_mod'])))
-        
-        if data.get('repo_created_at'):
-            g.add((repo, dc.created, Literal(data['repo_created_at'])))
+            if owner.startswith('http'):
+                g.add((repo, dc.creator, URIRef(owner)))
 
-        g.add((repo, dc.publisher, URIRef('https://github.com')))
+            if data.get('repo_url').startswith('http'):
+                g.add((repo, nno.hasRepositoryLink, URIRef(data['repo_url'])))
 
-        if data.get('repo_tags'):
-            for category_tag in data['repo_tags']:
-                g.add((repo, DOAP.category, Literal(category_tag)))
-        
-        if data.get('application'):
-            for nn_application in data['application']:
-                g.add((repo, nno.hasintendedUse, Literal(nn_application)))
-        
-        if data.get('repo_watch'):
-            g.add((repo, nno.stars, Literal(int(data['repo_watch']))))
+            if data.get('repo_last_mod'):
+                g.add((repo, dc.modified, Literal(data['repo_last_mod'])))
+            
+            if data.get('repo_created_at'):
+                g.add((repo, dc.created, Literal(data['repo_created_at'])))
 
-        if data.get('license') and data['license'].get('url'):
-            repo_license = URIRef(data['license']['url'])
-            g.add((repo, dc.license, repo_license))
-        
-        if data.get('reference_list'):
-            for ref in data['reference_list']:
-                g.add((repo, dc.references, URIRef(ref)))
-        
-        if data.get('see_also_links'):
-            for see in data['see_also_links']:
-                g.add((repo, RDFS.seeAlso, URIRef(str(see))))
-        
-        if result.get('models') and isinstance(result['models'], dict):
+            g.add((repo, dc.publisher, URIRef('https://github.com')))
+
+            if data.get('repo_tags'):
+                for category_tag in data['repo_tags']:
+                    g.add((repo, DOAP.category, Literal(category_tag)))
+            
+            if data.get('application'):
+                for nn_application in data['application']:
+                    g.add((repo, nno.hasintendedUse, Literal(nn_application)))
+            
+            if data.get('repo_watch'):
+                g.add((repo, nno.stars, Literal(int(data['repo_watch']))))
+
+            if data.get('license') and data['license'].get('url'):
+                repo_license = URIRef(data['license']['url'])
+                g.add((repo, dc.license, repo_license))
+            
+            if data.get('reference_list'):
+                for ref in data['reference_list']:
+                    g.add((repo, dc.references, URIRef(ref)))
+            
+            if data.get('see_also_links'):
+                for see in data['see_also_links']:
+                    g.add((repo, RDFS.seeAlso, URIRef(str(see))))
+            
+            #if result.get('models') and isinstance(result['models'], dict):
             models = result['models']
             for model_idx in models:
                 model = models[model_idx]
@@ -256,7 +259,7 @@ def convert_owl(data_json, result_json, owl_path):
 
                     if compile_info.get('optimizer'):
                         optimizer_full_name = compile_info['optimizer']
-                        optimizer = trans_opti(optimizer_full_name)
+                        optimizer = trans_opti(optimizer_full_name).lower()
                         if optimizer:
                             if (nno_url + optimizer) in optmizers_set:
                                 optimizer_URI = URIRef(nno_url + optimizer)
@@ -285,7 +288,7 @@ if __name__ == '__main__':
         result_json = json.load(f)
     f.close()
 
-    owl_path = './result_data_v3.owl'
+    owl_path = './result_data_v4.owl'
 
     convert_owl(data_json, result_json, owl_path)
 
