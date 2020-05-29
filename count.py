@@ -17,7 +17,7 @@ opti_list = []
 loss_list = []
 layer_list = []
 
-'''
+#'''
 for idx in result_code_json:
     models = result_code_json[idx]['models']
     if isinstance(models, dict):
@@ -41,7 +41,7 @@ for idx in result_h5_json:
             if models[model_idx]:
                 opti_list.append(models[model_idx].get('compile_info', {}).get('optimizer', ''))
                 loss_list.append(models[model_idx].get('compile_info', {}).get('loss', ''))
-#'''
+'''
 
 loss_list_2 = []
 for loss in loss_list:

@@ -1,5 +1,6 @@
 import datetime
 import json
+from copy import deepcopy
 
 from rdflib import DOAP, OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef, BNode
 
@@ -9,6 +10,14 @@ substitution_dict = {'rectified_linear_unit': 'relu',
                      'exponential_linear_unit': 'elu',
                      'scaled_exponential_linear_unit': 'selu',
                      'hyperbolic_tangent': 'tanh'}
+
+def gather_layer_keywords(layer):
+    keywords = deepcopy(layer)
+    if 'parameters' in keywords:
+        del keywords['parameters']
+    if 'name' in keywords:
+        del keywords['name']
+    return keywords
 
 def convert_owl(data_json, result_json, owl_path):
 
@@ -101,6 +110,16 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((URIRef(nno_url + 'customloss'), RDF.type, OWL.NamedIndividual))
     g.add((nno.customloss, RDF.type, nno.LossFunction))
     g.add((nno.customloss, RDFS.label, Literal('Custom Loss Function')))
+
+    g.add((URIRef(nno_url + 'hasLayerParameters'), RDF.type, OWL.DatatypeProperty))
+    g.add((nno.hasLayerParameters, RDFS.domain, nno.Layer))
+    g.add((nno.hasLayerParameters, RDFS.label, Literal('has layer parameters')))
+    g.add((nno.hasLayerParameters, RDFS.comment, Literal('Parameters of a layer')))
+
+    g.add((URIRef(nno_url + 'hasLayerKeywords'), RDF.type, OWL.DatatypeProperty))
+    g.add((nno.hasLayerKeywords, RDFS.domain, nno.Layer))
+    g.add((nno.hasLayerKeywords, RDFS.label, Literal('has layer keywords')))
+    g.add((nno.hasLayerKeywords, RDFS.comment, Literal('Keywords of a layer')))
     
     for key in result_json:
         idx = int(key)
@@ -111,7 +130,23 @@ def convert_owl(data_json, result_json, owl_path):
         owner = 'https://github.com/' + data['repo_owner']
         
         repo = URIRef(base_url + repo_full_name)
-        g.add((repo, RDF.type, nno.NeuralNetwork))
+
+        if 'nn_type' in data:
+            nn_type = data['nn_type']
+        elif 'suggested_type' in data:
+            nn_type = data['suggested_type']
+        else:
+            nn_type = ['nn']
+
+        if 'recurrent_type' in nn_type:
+            g.add((repo, RDF.type, nno.RecurrentNeuralNetwork))
+        elif 'conv_type' in nn_type:
+            g.add((repo, RDF.type, nno.ConvolutionalNeuralNetwork))
+        elif 'feed_forward_type' in nn_type:
+            g.add((repo, RDF.type, nno.FeedForwardNeuralNetwork))
+        else:
+            g.add((repo, RDF.type, nno.NeuralNetwork))
+
         g.add((repo, RDFS.label, Literal(repo_full_name)))
 
         if data.get('repo_desc'):
@@ -191,6 +226,14 @@ def convert_owl(data_json, result_json, owl_path):
                     g.add((layer_URI, RDFS.label, Literal(layer_name)))
                     g.add((layer_URI, nno.hasLayerSequence, Literal(int(layer_idx))))
                     g.add((layer_URI, RDF.type, layer_type_URI))
+
+                    if layer.get('parameters'):
+                        layer_parameters = layer['parameters']
+                        g.add((layer_URI, nno.hasLayerParameters, Literal(str(layer_parameters))))
+
+                    layer_keywords = gather_layer_keywords(layer)
+                    if len(layer_keywords) > 0:
+                        g.add((layer_URI, nno.hasLayerKeywords, Literal(str(layer_keywords))))
                         
                     g.add((model_URI, nno.hasLayer, layer_URI)) #connect layer to model
 
@@ -242,7 +285,7 @@ if __name__ == '__main__':
         result_json = json.load(f)
     f.close()
 
-    owl_path = './result_data_v4.owl'
+    owl_path = './result_data_v3.owl'
 
     convert_owl(data_json, result_json, owl_path)
 
