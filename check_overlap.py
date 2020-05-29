@@ -34,45 +34,45 @@ def trans_loss(loss):
     l = str(loss).lower()
     if 'categorical' in l:
         if 'sparse' in l:
-            return 'sparse_categorical_crossentropy'
+            return 'sparsecategoricalcrossentropy'
         elif 'hinge'  in l:
-            return 'categorical_hinge'
+            return 'categoricalhinge'
         else:
-            return 'categorical_crossentropy'
+            return 'categoricalcrossentropy'
     elif 'binary' in l:
-        return 'binary_crossentropy'
+        return 'binarycrossentropy'
     elif 'mae' in l:
-        return 'mae'
+        return 'meanabsoluteerror'
     elif 'mse' in l:
-        return 'mse'
+        return 'meansquarederror'
     elif 'mean' in l:
         if 'square' in l:
             if 'logar' in l:
-                return 'mean_squared_logarithmic_error'
+                return 'meansquaredlogarithmicerror'
             else:
-                return 'mse'
+                return 'meansquarederror'
         elif 'absolut' in l:
             if 'percent' in l:
-                return 'mape'
+                return 'meanabsolutepercentageerror'
             else:
-                return 'mae'
+                return 'meanabsoluteerror'
     elif 'mape' in l:
-        return 'mape'
+        return 'meanabsolutepercentageerror'
     elif 'logcosh' in l:
         return 'logcosh'
     elif 'huber' in l:
-        return 'huber_loss'
+        return 'huberloss'
     elif 'hinge' in l:
         if 'square' in l:
-            return 'squared_hinge'
+            return 'squaredhinge'
         elif 'categorical' in l:
-            return 'categorical_hinge'
+            return 'categoricalhinge'
         else:
             return 'hinge'
     elif 'cosine' in l:
-        return 'cosine_proximity'
+        return 'cosineproximity'
     elif 'kullback' in l:
-        return 'kullback_leibler_divergence'
+        return 'kullbackleiblerdivergence'
     else:
         return loss
     
