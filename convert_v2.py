@@ -3,6 +3,7 @@ import json
 from copy import deepcopy
 
 from rdflib import DOAP, OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef, BNode
+from werkzeug.urls import url_fix
 
 from check_overlap import layer_dict, trans_opti, trans_loss
 
@@ -15,8 +16,8 @@ def gather_layer_keywords(layer):
     keywords = deepcopy(layer)
     if 'parameters' in keywords:
         del keywords['parameters']
-    if 'name' in keywords:
-        del keywords['name']
+    if 'layer_type' in keywords:
+        del keywords['layer_type']
     return keywords
 
 def convert_owl(data_json, result_json, owl_path):
@@ -64,7 +65,18 @@ def convert_owl(data_json, result_json, owl_path):
         layer_types = g.subjects(RDFS.subClassOf, URIRef(layer_class))
         for l in layer_types:
             layer_type_set.add(str(l))
-
+    
+    '''#test
+    cnn_layer_type = set()
+    cnn_layers = g.subjects(RDFS.subClassOf, nno.ConvolutionalLayer)
+    for l in cnn_layers:
+        cnn_layer_type.add(str(l))
+    
+    rnn_layer_type = set()
+    rnn_layers = g.subjects(RDFS.subClassOf, nno.RecurrentLayer)
+    for l in rnn_layers:
+        rnn_layer_type.add(str(l))
+    '''
 
     #g = Graph()
     g.bind('nno', nno)
@@ -98,6 +110,7 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((nno.hassuggestedType, RDFS.label, Literal('has suggested type')))
     g.add((nno.hassuggestedType, RDFS.comment, Literal('Suggested Neural Network type based on readme information.')))
 
+    '''
     g.add((URIRef(nno_url + 'CustomLayer'), RDF.type, OWL.Class))
     g.add((nno.CustomLayer, RDFS.label, Literal('Custom Layer')))
     g.add((nno.CustomLayer, RDFS.comment, Literal('Custom layer defined by user')))
@@ -120,6 +133,7 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((nno.hasLayerKeywords, RDFS.domain, nno.Layer))
     g.add((nno.hasLayerKeywords, RDFS.label, Literal('has layer keywords')))
     g.add((nno.hasLayerKeywords, RDFS.comment, Literal('Keywords of a layer')))
+    '''
     
     for key in result_json:
         idx = int(key)
@@ -183,17 +197,17 @@ def convert_owl(data_json, result_json, owl_path):
             if data.get('repo_watch'):
                 g.add((repo, nno.stars, Literal(int(data['repo_watch']))))
 
-            if data.get('license') and data['license'].get('url'):
-                repo_license = URIRef(data['license']['url'])
+            if data.get('license') and data['license'].get('key'):
+                repo_license = URIRef('https://choosealicense.com/licenses/' + data['license']['key'])
                 g.add((repo, dc.license, repo_license))
             
             if data.get('reference_list'):
                 for ref in data['reference_list']:
-                    g.add((repo, dc.references, URIRef(ref)))
+                    g.add((repo, dc.references, URIRef(url_fix(ref))))
             
             if data.get('see_also_links'):
                 for see in data['see_also_links']:
-                    g.add((repo, RDFS.seeAlso, URIRef(str(see))))
+                    g.add((repo, RDFS.seeAlso, URIRef(url_fix(see))))
             
             #if result.get('models') and isinstance(result['models'], dict):
             models = result['models']
@@ -218,7 +232,7 @@ def convert_owl(data_json, result_json, owl_path):
                 layers = model['layers']
                 for layer_idx in layers:
                     layer = layers[layer_idx]
-                    layer_type = layer['name'] if layer['name'] else 'Unknown'
+                    layer_type = layer['layer_type'] if layer['layer_type'] else 'Unknown'
                     layer_type = layer_dict.get(layer_type, layer_type)
                     layer_type = layer_type.replace(' ', '_')
                     layer_name = layer_type.lower() + '_' + layer_idx
@@ -283,12 +297,12 @@ if __name__ == '__main__':
         data_json = json.load(f)
     f.close()
 
-    result_path = './result_data_v4.json'
+    result_path = './result_data_v6.json'
     with open(result_path, 'r') as f:
         result_json = json.load(f)
     f.close()
 
-    owl_path = './result_data_v4.owl'
+    owl_path = './result_data_v6.owl'
 
     convert_owl(data_json, result_json, owl_path)
 

@@ -269,9 +269,9 @@ def extract_architecture_from_python_ast(code_str, model_num):
                     if expr_func.find('attr').text == 'add' and expr_func.xpath('child::value/id')[0].text == seq_name:
                         if len(value.xpath('child::args/item/func/id')) > 0:
                             layer_num += 1
-                            layer_name = value.xpath('child::args/item/func/id')[0].text
+                            layer_type = value.xpath('child::args/item/func/id')[0].text
                             layer = {}
-                            layer['name'] = layer_name
+                            layer['layer_type'] = layer_type
                             layer_root = value.xpath('child::args/item')[0]
                             #layer_paras = value.xpath('child::args/item/args/item')
                             layer_paras_list = []
