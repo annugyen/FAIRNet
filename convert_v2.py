@@ -134,6 +134,22 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((nno.hasLayerKeywords, RDFS.label, Literal('has layer keywords')))
     g.add((nno.hasLayerKeywords, RDFS.comment, Literal('Keywords of a layer')))
     '''
+
+    g.add((URIRef(nno_url + 'hasBaseModel'), RDF.type, OWL.DatatypeProperty))
+    g.add((nno.hasBaseModel, RDFS.domain, nno.Model))
+    g.add((nno.hasBaseModel, RDFS.label, Literal('has base model')))
+    g.add((nno.hasBaseModel, RDFS.comment, Literal('Base model from keras application')))
+
+    g.add((URIRef(nno_url + 'BaseModel'), RDF.type, OWL.Class))
+    g.add((nno.BaseModel, RDFS.label, Literal('Base Model')))
+    g.add((nno.BaseModel, RDFS.comment, Literal('Base model from keras application')))
+    g.add((nno.BaseModel, RDFS.subClassOf, nno.Layer))
+
+    g.add((URIRef(nno_url + 'hasBaseModelKeywords'), RDF.type, OWL.DatatypeProperty))
+    g.add((nno.hasBaseModelKeywords, RDFS.domain, nno.BaseModel))
+    g.add((nno.hasBaseModelKeywords, RDFS.label, Literal('has base model keywords')))
+    g.add((nno.hasBaseModelKeywords, RDFS.comment, Literal('Keywords of base model')))
+
     
     for key in result_json:
         idx = int(key)
@@ -218,6 +234,17 @@ def convert_owl(data_json, result_json, owl_path):
                 g.add((model_URI, RDFS.label, Literal(model_name)))
                 g.add((model_URI, nno.hasModelSequence, Literal(model_idx)))
                 g.add((model_URI, RDF.type, nno.Model))
+
+                if 'base_model' in model:
+                    base_model_name = model['base_model']['name']
+                    base_model_URI = URIRef(base_url + repo_full_name + '_' + model_name + '_' + base_model_name)
+                    g.add((base_model_URI, RDF.type, nno.BaseModel))
+                    g.add((base_model_URI, RDFS.label, Literal(base_model_name)))
+                    base_model_kw = deepcopy(model['base_model']) 
+                    del base_model_kw['name']
+                    del base_model_kw['parameters']
+                    g.add((base_model_URI, nno.hasBaseModelKeywords, Literal(str(base_model_kw))))
+                    g.add((model_URI, nno.hasBaseModel, base_model_URI))
                 
                 g.add((repo, nno.hasModel, model_URI)) #connect model to repo
 
