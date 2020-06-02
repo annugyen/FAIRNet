@@ -77,7 +77,10 @@ def get_model_type(layers):
             model_type.add('rnn')
     else:
         if 'cnn' not in model_type and 'rnn' not in model_type:
-            model_type.add('fnn')
+            if len(layers) > 0:
+                model_type.add('fnn')
+            else:
+                model_type.add('nn')
     return model_type
 
 def DictSort(Dict):

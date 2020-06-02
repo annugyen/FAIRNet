@@ -31,7 +31,8 @@ def convert_owl(data_json, result_json, owl_path):
     xmls = Namespace('http://www.w3.org/2001/XMLSchema#')
     
     g = Graph()
-    g.parse('http://people.aifb.kit.edu/ns1888/nno/nno.owl', format='xml')
+    #g.parse('http://people.aifb.kit.edu/ns1888/nno/nno.owl', format='xml')
+    g.parse('./nno.owl', format='xml')
 
     activation_functions = g.subjects(RDF.type, URIRef(nno_url + 'ActivationFunction'))
     activation_functions_set = set()
@@ -232,7 +233,7 @@ def convert_owl(data_json, result_json, owl_path):
                 model_name = 'model_' + model_idx
                 model_URI = URIRef(base_url + repo_full_name + '_' + model_name)
                 g.add((model_URI, RDFS.label, Literal(model_name)))
-                g.add((model_URI, nno.hasModelSequence, Literal(model_idx)))
+                g.add((model_URI, nno.hasModelSequence, Literal(int(model_idx))))
                 g.add((model_URI, RDF.type, nno.Model))
 
                 if 'base_model' in model:
@@ -313,7 +314,10 @@ def convert_owl(data_json, result_json, owl_path):
 
                     if compile_info.get('metrics'):
                         g.add((model_URI, nno.hasMetric, Literal(str(compile_info['metrics']))))
-                
+        '''#test
+        if idx == 99:
+            break 
+        '''       
                 
 
     g.serialize(owl_path, format = 'pretty-xml')
