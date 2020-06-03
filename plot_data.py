@@ -137,6 +137,10 @@ if __name__ == '__main__':
     RNN_layer_list = []
     FNN_layer_list = []
 
+    repo_CNN_creat_time_list = []
+    repo_RNN_creat_time_list = []
+    repo_FNN_creat_time_list = []
+
     for (data, idx) in zip(data_json, result_json):
         creat_time = data['repo_created_at'][0:7]
         
@@ -173,16 +177,20 @@ if __name__ == '__main__':
             '''
 
             models = result_json[idx].get('models')
+            repo_type = set()
             for model_idx in models:
                 layers = models[model_idx].get('layers', {})
                 model_type = models[model_idx]['model_type']
                 if isinstance(layers, dict) and len(layers) > 0:
                     if 'rnn' in model_type:
                         RNN_creat_time_list.append(time_dict[creat_time])
+                        repo_type.add('rnn')
                     if 'cnn' in model_type:
                         CNN_creat_time_list.append(time_dict[creat_time])
+                        repo_type.add('cnn')
                     if 'fnn' in model_type:
                         FNN_creat_time_list.append(time_dict[creat_time])
+                        repo_type.add('fnn')
                 for layer_idx in layers:
                     layer = layers[layer_idx]
                     layer_type = layer.get('layer_type', '')
@@ -199,6 +207,13 @@ if __name__ == '__main__':
                         CNN_layer_list.append(layer_type)
                     if 'fnn' in model_type:
                         FNN_layer_list.append(layer_type)
+
+            if 'rnn' in repo_type:
+                repo_RNN_creat_time_list.append(time_dict[creat_time])
+            if 'cnn' in repo_type:
+                repo_CNN_creat_time_list.append(time_dict[creat_time])
+            if 'fnn' in repo_type:
+                repo_FNN_creat_time_list.append(time_dict[creat_time])
 
     acti_num_dict = {}
     for acti in activation_list:
@@ -265,7 +280,24 @@ if __name__ == '__main__':
     #ax1.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
     ax1.set_xlabel('Date', fontsize='xx-large')
     ax1.set_ylabel('Number of occurrence', fontsize='xx-large')
-    fig1.savefig('./figures/cummulativeNeuralNetwork010620.pdf', dpi=300, format='pdf')
+    fig1.savefig('./figures/cummulativeNeuralNetwork030620_1.pdf', dpi=300, format='pdf')
+
+    fig6 = plt.figure('Figure6',figsize = (10, 6))
+    plt.figure('Figure6')
+    ax6 = plt.subplot(111)
+    plt.hist(repo_CNN_creat_time_list, bins = 54, color = 'blue', histtype = 'step', cumulative = True, label = 'CNN')
+    plt.hist(repo_RNN_creat_time_list, bins = 54, color = 'red', histtype = 'step', cumulative = True, label = 'RNN')
+    plt.hist(repo_FNN_creat_time_list, bins = 54, color = 'green', histtype = 'step', cumulative = True, label = 'FNN')
+    plt.xticks(range(0, 54, 4), time_axis[::4], rotation=70, fontsize='x-large')
+    plt.yticks(fontsize='x-large')
+    plt.subplots_adjust(left=0.10, bottom=0.20, right=0.99, top=0.99)
+    ax6.legend(loc = 'upper left', fontsize='x-large')
+    #ax6.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
+    ax6.set_xlabel('Date', fontsize='xx-large')
+    ax6.set_ylabel('Number of occurrence', fontsize='xx-large')
+    fig6.savefig('./figures/cummulativeNeuralNetwork030620_2.pdf', dpi=300, format='pdf')
+
+    plt.show()
 
     #draw bar plot of activation functions
     fig2 = plt.figure('Figure2',figsize = (10, 6))
@@ -278,9 +310,7 @@ if __name__ == '__main__':
     plt.subplots_adjust(left=0.11, bottom=0.20, right=0.99, top=0.995)
     #ax2.set_title('Top 10 used activation functions in the neural networks')
     ax2.set_ylabel('Number of Activation Functions', fontsize='xx-large')
-    fig2.savefig('./figures/activationFunction010620.pdf', dpi=300, format='pdf')
-
-    plt.show()
+    fig2.savefig('./figures/activationFunction030620.pdf', dpi=300, format='pdf')
 
     #draw bar plot of layer types used in CNNs
     fig3 = plt.figure('Figure3',figsize = (10, 6))
