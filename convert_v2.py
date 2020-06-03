@@ -32,7 +32,8 @@ def convert_owl(data_json, result_json, owl_path):
     
     g = Graph()
     #g.parse('http://people.aifb.kit.edu/ns1888/nno/nno.owl', format='xml')
-    g.parse('./nno.owl', format='xml')
+    #g.parse('./nno.owl', format='xml')
+    g.parse('http://people.aifb.kit.edu/ns1888/nno/nno.ttl', format='turtle')
 
     activation_functions = g.subjects(RDF.type, URIRef(nno_url + 'ActivationFunction'))
     activation_functions_set = set()
@@ -85,7 +86,7 @@ def convert_owl(data_json, result_json, owl_path):
     g.bind('owl', OWL)
     g.bind('vs', vs)
     g.bind('cc', cc)
-    g.bind('xmls', xmls)
+    g.bind('xsd', xmls)
     g.bind('doap', DOAP)
 
     tmp = URIRef('https://w3id.org/nno/data')
@@ -134,7 +135,6 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((nno.hasLayerKeywords, RDFS.domain, nno.Layer))
     g.add((nno.hasLayerKeywords, RDFS.label, Literal('has layer keywords')))
     g.add((nno.hasLayerKeywords, RDFS.comment, Literal('Keywords of a layer')))
-    '''
 
     g.add((URIRef(nno_url + 'hasBaseModel'), RDF.type, OWL.DatatypeProperty))
     g.add((nno.hasBaseModel, RDFS.domain, nno.Model))
@@ -150,6 +150,7 @@ def convert_owl(data_json, result_json, owl_path):
     g.add((nno.hasBaseModelKeywords, RDFS.domain, nno.BaseModel))
     g.add((nno.hasBaseModelKeywords, RDFS.label, Literal('has base model keywords')))
     g.add((nno.hasBaseModelKeywords, RDFS.comment, Literal('Keywords of base model')))
+    '''
 
     
     for key in result_json:
@@ -165,6 +166,7 @@ def convert_owl(data_json, result_json, owl_path):
             
             repo = URIRef(base_url + repo_full_name)
 
+            '''
             if 'nn_type' in data:
                 nn_type = data['nn_type']
             elif 'suggested_type' in data:
@@ -180,6 +182,8 @@ def convert_owl(data_json, result_json, owl_path):
                 g.add((repo, RDF.type, nno.FeedForwardNeuralNetwork))
             else:
                 g.add((repo, RDF.type, nno.NeuralNetwork))
+            '''
+            g.add((repo, RDF.type, nno.NeuralNetwork))
 
             g.add((repo, RDFS.label, Literal(repo_full_name)))
 
@@ -246,6 +250,10 @@ def convert_owl(data_json, result_json, owl_path):
                     del base_model_kw['parameters']
                     g.add((base_model_URI, nno.hasBaseModelKeywords, Literal(str(base_model_kw))))
                     g.add((model_URI, nno.hasBaseModel, base_model_URI))
+
+                if 'model_type' in model:
+                    if 'cnn' in model['model_type'] or 'rnn' in model['model_type'] or 'fnn' in model['model_type']:
+                        g.add((model_URI, nno.hasModelType, Literal(str(model['model_type']))))
                 
                 g.add((repo, nno.hasModel, model_URI)) #connect model to repo
 
@@ -317,10 +325,10 @@ def convert_owl(data_json, result_json, owl_path):
         '''#test
         if idx == 99:
             break 
-        '''       
+        '''
                 
 
-    g.serialize(owl_path, format = 'pretty-xml')
+    g.serialize(owl_path, format = 'turtle')
 
 if __name__ == '__main__':
     data_path = './data.json'
@@ -333,7 +341,7 @@ if __name__ == '__main__':
         result_json = json.load(f)
     f.close()
 
-    owl_path = './result_data_v6.owl'
+    owl_path = './result_data_v7.ttl'
 
     convert_owl(data_json, result_json, owl_path)
 
