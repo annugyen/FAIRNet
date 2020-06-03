@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 layer_dict = {
     "Convolution1D": "Conv1D",
@@ -81,14 +82,22 @@ def check_overlap(models_code, models_h5):
     has_overlap = []
     if isinstance(models_code, dict) and isinstance(models_h5, dict) and len(models_code) > 0 and len(models_h5) > 0:
         for j in models_h5:
+            offset_h5 = 0
             model_h5 = models_h5[j]
-            layers_h5 = model_h5['layers']
+            layers_h5 = deepcopy(model_h5['layers'])
+            if layers_h5.get('0', {}).get('layer_type') == 'InputLayer':
+                del layers_h5['0']
+                offset_h5 = -1
             optimizer_h5 = model_h5['compile_info']['optimizer']
             loss_h5 = model_h5['compile_info']['loss']
             metrics_h5 =  model_h5['compile_info']['metrics']
             for i in models_code:
+                offset_code = 0
                 model_code = models_code[i]
-                layers_code = model_code['layers']
+                layers_code = deepcopy(model_code['layers'])
+                if layers_code.get('1', {}).get('layer_type') == 'InputLayer':
+                    del layers_code['1']
+                    offset_code = 1
                 optimizer_code = model_code.get('compile_info', {}).get('optimizer', [])
                 loss_code = model_code.get('compile_info', {}).get('loss', [])
                 metrics_code =  model_code.get('compile_info', {}).get('metrics', [])
@@ -96,7 +105,7 @@ def check_overlap(models_code, models_h5):
                     for k in layers_h5:
                         layer_h5_type = layers_h5[k]['layer_type']
                         layer_h5_name = layers_h5[k]['layer_name']
-                        layer_code_name = layers_code[str(int(k) + 1)]['name']
+                        layer_code_name = layers_code[str(int(k) + 1 + offset_h5 + offset_code)]['layer_type']
                         if layer_h5_type != layer_code_name:
                             if layer_dict.get(layer_code_name) != layer_h5_type and layer_h5_name != layer_code_name:
                                 break
@@ -112,9 +121,9 @@ def check_overlap(models_code, models_h5):
 
 if __name__ == '__main__':
     #data_path = './data.json'
-    result_code_path = './result_data_v4.json'
+    result_code_path = './result_data_v6.json'
     result_h5_path = './result_data_h5_merged.json'
-    result_overlap_path = './result_data_overlap_v2.json'
+    result_overlap_path = './result_data_overlap_test.json'
     '''
     with open(data_path, 'r') as f:
         data_json = json.load(f)
