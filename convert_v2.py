@@ -40,10 +40,12 @@ def convert_owl(data_json, result_json, owl_path):
     for func in activation_functions:
         activation_functions_set.add(str(func))
 
+    '''
     g.add((URIRef(nno_url + 'huberloss'), RDF.type, OWL.NamedIndividual))
     g.add((nno.huberloss, RDF.type, nno.RegressiveLoss))
     g.add((nno.huberloss, RDFS.label, Literal('Huber Loss')))
-
+    '''
+    
     loss_funtions_regr = g.subjects(RDF.type, URIRef(nno_url + 'RegressiveLoss'))
     loss_funtions_class = g.subjects(RDF.type, URIRef(nno_url + 'ClassificationLoss'))
     loss_functions_set = set()

@@ -1,6 +1,6 @@
 import json
 
-result_path = './result_data_v4.json'
+result_path = './result_data_v6.json'
 data_path = './data.json'
 
 with open(result_path, 'r') as f:
@@ -34,9 +34,9 @@ for idx in range(len(results_data)):
             model = results_data[str(idx)]['models'][model_idx]
             for layer_idx in model['layers']:
                 layer = model['layers'][layer_idx]
-                if layer['name'] == 'Lambda':
+                if layer['layer_type'] == 'Lambda':
                     lambda_list.append(results_data[str(idx)]['repo_full_name'])
-                if layer['name'] == 'Activation':
+                if layer['layer_type'] == 'Activation':
                     activi_list.append(results_data[str(idx)]['repo_full_name'])
         lambda_list = list(set(lambda_list))
         activi_list = list(set(activi_list))
@@ -51,6 +51,8 @@ for idx in range(len(results_data)):
             license_list.append(data_json[idx].get('license', {}).get('key', ''))
         user_list.append(data_json[idx].get('repo_owner', ''))
         valid_list.append(idx)
+    if idx == 99:
+        a = 1
 
 '''
 for key in results_data:
