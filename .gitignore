@@ -148,3 +148,4 @@ dmypy.json
 # test files
 test*.py
 example*.py
+test*.html
