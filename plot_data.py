@@ -68,8 +68,10 @@ def trans_acti(acti):
     else:
         return acti
 
-def get_model_type(layers):
+def get_model_type(layers, hasbasemodel):
     model_type = set()
+    if hasbasemodel:
+        model_type.add('cnn')
     for layer_idx in layers:
         if layers[layer_idx].get('layer_type', '').lower() in C_layer_type:
             model_type.add('cnn')
@@ -108,7 +110,7 @@ if __name__ == '__main__':
         data_json = json.load(f)
     f.close()
 
-    result_path = './result_data_v6.json'
+    result_path = './result_data_v7.json'
     with open(result_path, 'r') as f:
         result_json = json.load(f)
     f.close()
@@ -280,7 +282,7 @@ if __name__ == '__main__':
     #ax1.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
     ax1.set_xlabel('Date', fontsize='xx-large')
     ax1.set_ylabel('Number of occurrence', fontsize='xx-large')
-    fig1.savefig('./figures/cummulativeNeuralNetwork030620_1.pdf', dpi=300, format='pdf')
+    #fig1.savefig('./figures/cumulativeNeuralNetwork050620_1.pdf', dpi=300, format='pdf')
 
     fig6 = plt.figure('Figure6',figsize = (10, 6))
     plt.figure('Figure6')
@@ -295,8 +297,46 @@ if __name__ == '__main__':
     #ax6.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
     ax6.set_xlabel('Date', fontsize='xx-large')
     ax6.set_ylabel('Number of occurrence', fontsize='xx-large')
-    fig6.savefig('./figures/cummulativeNeuralNetwork030620_2.pdf', dpi=300, format='pdf')
+    #fig6.savefig('./figures/cumulativeNeuralNetwork050620_2.pdf', dpi=300, format='pdf')
 
+    num_repo_CNN_creat_time_list = [repo_CNN_creat_time_list.count(t) for t in range(54)]
+    sum_repo_CNN_creat_time_list = [sum(num_repo_CNN_creat_time_list[:t]) for t in range(1, 55)]
+    num_repo_RNN_creat_time_list = [repo_RNN_creat_time_list.count(t) for t in range(54)]
+    sum_repo_RNN_creat_time_list = [sum(num_repo_RNN_creat_time_list[:t]) for t in range(1, 55)]
+    num_repo_FNN_creat_time_list = [repo_FNN_creat_time_list.count(t) for t in range(54)]
+    sum_repo_FNN_creat_time_list = [sum(num_repo_FNN_creat_time_list[:t]) for t in range(1, 55)]
+
+    fig7 = plt.figure('Figure7',figsize = (10, 6))
+    plt.figure('Figure7')
+    ax7 = plt.subplot(111)
+    plt.plot(range(54), sum_repo_CNN_creat_time_list, 'bv-', label = 'CNN')
+    plt.plot(range(54), sum_repo_RNN_creat_time_list, 'rs-', label = 'RNN')
+    plt.plot(range(54), sum_repo_FNN_creat_time_list, 'go-', label = 'FNN')
+    plt.xticks(range(0, 54, 4), time_axis[::4], rotation=70, fontsize='x-large')
+    plt.yticks(fontsize='x-large')
+    plt.subplots_adjust(left=0.10, bottom=0.20, right=0.99, top=0.99)
+    ax7.legend(loc = 'upper left', fontsize='x-large')
+    #ax7.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
+    ax7.set_xlabel('Date', fontsize='xx-large')
+    ax7.set_ylabel('Number of occurrence', fontsize='xx-large')
+    fig7.savefig('./figures/cumulativeNeuralNetwork050620_3.pdf', dpi=300, format='pdf')
+    
+    fig8 = plt.figure('Figure8',figsize = (10, 6))
+    plt.figure('Figure8')
+    ax8 = plt.subplot(111)
+    plt.plot(range(54), sum_repo_CNN_creat_time_list, 'b--', drawstyle='steps-mid', label = 'CNN')
+    #plt.hist(repo_CNN_creat_time_list, bins = 54, color = 'blue', histtype = 'step', cumulative = True, label = 'CNN1')
+    plt.plot(range(54), sum_repo_RNN_creat_time_list, 'r-.', drawstyle='steps-mid', label = 'RNN')
+    plt.plot(range(54), sum_repo_FNN_creat_time_list, 'g-', drawstyle='steps-mid', label = 'FNN')
+    plt.xticks(range(0, 54, 4), time_axis[::4], rotation=70, fontsize='x-large')
+    plt.yticks(fontsize='x-large')
+    plt.subplots_adjust(left=0.10, bottom=0.20, right=0.99, top=0.99)
+    ax8.legend(loc = 'upper left', fontsize='x-large')
+    #ax8.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
+    ax8.set_xlabel('Date', fontsize='xx-large')
+    ax8.set_ylabel('Number of occurrence', fontsize='xx-large')
+    #fig8.savefig('./figures/cumulativeNeuralNetwork050620_4.pdf', dpi=300, format='pdf')    
+    
     plt.show()
 
     #draw bar plot of activation functions
@@ -310,7 +350,7 @@ if __name__ == '__main__':
     plt.subplots_adjust(left=0.11, bottom=0.20, right=0.99, top=0.995)
     #ax2.set_title('Top 10 used activation functions in the neural networks')
     ax2.set_ylabel('Number of Activation Functions', fontsize='xx-large')
-    fig2.savefig('./figures/activationFunction030620.pdf', dpi=300, format='pdf')
+    #fig2.savefig('./figures/activationFunction050620.pdf', dpi=300, format='pdf')
 
     #draw bar plot of layer types used in CNNs
     fig3 = plt.figure('Figure3',figsize = (10, 6))

@@ -136,28 +136,30 @@ def fix_result():
 '''
 
 def add_model_type():
-    for idx in result_json_6:
-        models = result_json_6[idx].get('models', {})
+    for idx in result_json_7:
+        models = result_json_7[idx].get('models', {})
         if isinstance(models, dict) and len(models) > 0:
             for model_idx in models:
                 model = models[model_idx]
                 layers = model.get('layers', {})
-                model_type = get_model_type(layers)
+                hasbasemodel = True if model.get('base_model') else False
+                model_type = get_model_type(layers, hasbasemodel)
                 models[model_idx]['model_type'] = list(model_type)
 
 if __name__ == '__main__':
     #result_path_4 = './result_data_v4.json'
-    result_path_5 = './result_data_v5.json'
+    #result_path_5 = './result_data_v5.json'
     result_path_6 = './result_data_v6.json'
+    result_path_7 = './result_data_v7.json'
 
-    with open(result_path_5, 'r') as f:
-        result_json_5 = json.load(f)
+    with open(result_path_6, 'r') as f:
+        result_json_6 = json.load(f)
     f.close()
 
-    result_json_6 = deepcopy(result_json_5)
+    result_json_7 = deepcopy(result_json_6)
     add_model_type()
-    result_json = json.dumps(result_json_6, indent = 4, separators = (',', ': '))
-    with open(result_path_6, 'w') as f:
+    result_json = json.dumps(result_json_7, indent = 4, separators = (',', ': '))
+    with open(result_path_7, 'w') as f:
         f.write(result_json)
     f.close()
 

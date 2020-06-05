@@ -338,7 +338,7 @@ if __name__ == '__main__':
         data_json = json.load(f)
     f.close()
 
-    result_path = './result_data_v6.json'
+    result_path = './result_data_v7.json'
     with open(result_path, 'r') as f:
         result_json = json.load(f)
     f.close()
