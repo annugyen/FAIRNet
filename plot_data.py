@@ -40,6 +40,27 @@ R_layer_type = [
     'SimpleRNNCell',
 ]
 
+layer_default_linear = [
+    'Dense',
+    'Conv1D',
+    'Conv2D',
+    'Conv2DTranspose',
+    'Conv3D',
+    'Conv3DTranspose',
+    'DepthwiseConv2D',
+    'SeparableConv1D',
+    'SeparableConv2D',
+    'LocallyConnected1D',
+    'LocallyConnected2D',
+]
+
+layer_default_tanh = [    
+    'LSTM',
+    'GRU',
+    'SimpleRNN',
+    'ConvLSTM2D'
+]
+
 R_layer_type = [l.lower() for l in R_layer_type]
 
 def trans_acti(acti):
@@ -53,6 +74,8 @@ def trans_acti(acti):
         return 'selu'
     elif 'elu' in acti:
         return 'elu'
+    elif 'hard_sigmoid' in acti:
+        return 'hard sigmoid'
     elif 'sigmoid' in acti:
         return 'sigmoid'
     elif 'exponential' in acti:
@@ -200,7 +223,26 @@ if __name__ == '__main__':
                         if len(layer['parameters']) > 0:
                             activation_list.append(str(layer['parameters'][0]).lower())
                     elif 'activation' in layer:
-                        activation_list.append(str(layer.get('activation')).lower())
+                        if layer['activation']:
+                            #activation_list.append(layer['activation'].lower())
+                            if layer['activation'].lower() == 'none':
+                                activation_list.append('linear')
+                            else:
+                                activation_list.append(layer['activation'].lower())
+                    else:
+                        if layer_type in layer_default_linear:
+                            activation_list.append('linear')
+                        elif layer_type in layer_default_tanh:
+                            activation_list.append('tanh')
+                    if 'recurrent_activation' in layer:
+                        if layer['recurrent_activation']:
+                            if layer['recurrent_activation'].lower() == 'none':
+                                activation_list.append('linear')
+                            else:
+                                activation_list.append(layer['recurrent_activation'].lower())
+                    elif layer_type in layer_default_tanh and layer_type != 'SimpleRNN':
+                        activation_list.append('hard_sigmoid')
+
 
                     #CNN_layer_list.append(layers[layer_idx].get('name'))
                     if 'rnn' in model_type:
@@ -220,7 +262,7 @@ if __name__ == '__main__':
     acti_num_dict = {}
     for acti in activation_list:
         act = trans_acti(acti)
-        if act != 'not_found' and act != 'none' and act != 'self.activation':
+        if act != 'not_found' and act != 'self.activation':
             if act not in acti_num_dict:
                 acti_num_dict[act] = 1
             else:
@@ -319,7 +361,7 @@ if __name__ == '__main__':
     #ax7.set_title('Cumulative histogram of the number of Neural Networks \n created over time in the Dataset.')
     ax7.set_xlabel('Date', fontsize='xx-large')
     ax7.set_ylabel('Number of occurrence', fontsize='xx-large')
-    fig7.savefig('./figures/cumulativeNeuralNetwork050620_3.pdf', dpi=300, format='pdf')
+    #fig7.savefig('./figures/cumulativeNeuralNetwork050620_3.pdf', dpi=300, format='pdf')
     
     fig8 = plt.figure('Figure8',figsize = (10, 6))
     plt.figure('Figure8')
@@ -337,7 +379,7 @@ if __name__ == '__main__':
     ax8.set_ylabel('Number of occurrence', fontsize='xx-large')
     #fig8.savefig('./figures/cumulativeNeuralNetwork050620_4.pdf', dpi=300, format='pdf')    
     
-    plt.show()
+    #plt.show()
 
     #draw bar plot of activation functions
     fig2 = plt.figure('Figure2',figsize = (10, 6))
@@ -347,10 +389,12 @@ if __name__ == '__main__':
     autolabel(rects2, ax2)
     plt.xticks(rotation = 70, fontsize='xx-large')
     plt.yticks(fontsize='x-large')
-    plt.subplots_adjust(left=0.11, bottom=0.20, right=0.99, top=0.995)
+    plt.subplots_adjust(left=0.11, bottom=0.28, right=0.99, top=0.995)
     #ax2.set_title('Top 10 used activation functions in the neural networks')
     ax2.set_ylabel('Number of Activation Functions', fontsize='xx-large')
-    #fig2.savefig('./figures/activationFunction050620.pdf', dpi=300, format='pdf')
+    fig2.savefig('./figures/activationFunction060620.pdf', dpi=300, format='pdf')
+
+    plt.show()
 
     #draw bar plot of layer types used in CNNs
     fig3 = plt.figure('Figure3',figsize = (10, 6))

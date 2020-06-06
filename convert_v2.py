@@ -189,11 +189,21 @@ def convert_owl(data_json, result_json, owl_path):
 
             g.add((repo, RDFS.label, Literal(repo_full_name)))
 
+            '''
             if data.get('repo_desc'):
                 g.add((repo, dc.description, Literal(data['repo_desc'])))
             
             if data.get('readme_text'):
                 g.add((repo, dc.description, Literal(data['readme_text'])))
+            '''
+            repo_desc_readme = ''
+            for item in ['repo_desc', 'readme_text']:
+                if repo_desc_readme:
+                    repo_desc_readme += ' || '
+                if data.get(item):
+                    repo_desc_readme += str(data.get(item))
+            if repo_desc_readme:
+                g.add((repo, dc.description, Literal(repo_desc_readme)))
 
             if owner.startswith('http'):
                 g.add((repo, dc.creator, URIRef(owner)))

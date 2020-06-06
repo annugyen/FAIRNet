@@ -1,6 +1,6 @@
 import json
 
-result_path = './result_data_v6.json'
+result_path = './result_data_v7.json'
 data_path = './data.json'
 
 with open(result_path, 'r') as f:
