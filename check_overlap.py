@@ -4,7 +4,19 @@ from copy import deepcopy
 layer_dict = {
     "Convolution1D": "Conv1D",
     "Convolution2D": "Conv2D",
-    "Convolution3D": "Conv3D"
+    "Convolution3D": "Conv3D",
+    "MaxPool1D": "MaxPooling1D",
+    "MaxPool2D": "MaxPooling2D",
+    "MaxPool3D": "MaxPooling3D",
+    "AvgPool1D": "AveragePooling1D",
+    "AvgPool2D": "AveragePooling2D",
+    "AvgPool3D": "AveragePooling3D",
+    "GlobalMaxPool1D":"GlobalMaxPooling1D",
+    "GlobalMaxPool2D": "GlobalMaxPooling2D",
+    "GlobalMaxPool3D": "GlobalMaxPooling3D",
+    "GlobalAvgPool1D": "GlobalAveragePooling1D",
+    "GlobalAvgPool2D": "GlobalAveragePooling2D",
+    "GlobalAvgPool3D": "GlobalAveragePooling3D",
 }
 
 opti_list = []
@@ -121,9 +133,9 @@ def check_overlap(models_code, models_h5):
 
 if __name__ == '__main__':
     #data_path = './data.json'
-    result_code_path = './result_data_v6.json'
+    result_code_path = './result_data_v7.json'
     result_h5_path = './result_data_h5_merged.json'
-    result_overlap_path = './result_data_overlap_test.json'
+    result_overlap_path = './result_data_overlap_v5.json'
     '''
     with open(data_path, 'r') as f:
         data_json = json.load(f)

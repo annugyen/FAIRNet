@@ -21,6 +21,7 @@ valid_list = []
 user_list = []
 license_list = []
 time_list = []
+layer_type_list = []
 
 for idx in range(len(results_data)):
     if not results_data[str(idx)]['models']:
@@ -38,6 +39,7 @@ for idx in range(len(results_data)):
                     lambda_list.append(results_data[str(idx)]['repo_full_name'])
                 if layer['layer_type'] == 'Activation':
                     activi_list.append(results_data[str(idx)]['repo_full_name'])
+                layer_type_list.append(layer['layer_type'])
         lambda_list = list(set(lambda_list))
         activi_list = list(set(activi_list))
     models = results_data[str(idx)]['models']
