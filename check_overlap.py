@@ -17,6 +17,7 @@ layer_dict = {
     "GlobalAvgPool1D": "GlobalAveragePooling1D",
     "GlobalAvgPool2D": "GlobalAveragePooling2D",
     "GlobalAvgPool3D": "GlobalAveragePooling3D",
+    "InputLayer": "Input",
 }
 
 opti_list = []
