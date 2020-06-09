@@ -10,11 +10,11 @@ This framework extracts the neural network architecture information to build a k
 
 ## Authors
 
-* **[Anna Nguyen](https://www.aifb.kit.edu/web/Anna_Nguyen)**
-* **[Tobias Weller](https://www.aifb.kit.edu/web/Tobias_Weller)**
-* **[Michael Färber](https://www.aifb.kit.edu/web/Michael_Färber)**
-* **[York Sure-Vetter](https://www.aifb.kit.edu/web/York_Sure-Vetter)**
-* **[Yanglin Xu](https://www.aifb.kit.edu/web/Xu,_Yanglin)**
+* **[Anna Nguyen](https://www.aifb.kit.edu/web/Anna_Nguyen/en)**
+* **[Tobias Weller](https://www.aifb.kit.edu/web/Tobias_Weller/en)**
+* **[Michael Färber](https://www.aifb.kit.edu/web/Michael_Färber/en)**
+* **[York Sure-Vetter](https://www.aifb.kit.edu/web/York_Sure-Vetter/en)**
+* **[Yanglin Xu](https://www.aifb.kit.edu/web/Xu,_Yanglin/en)**
 
 ## Paper
 
