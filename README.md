@@ -6,15 +6,27 @@ This framework extracts the neural network architecture information to build a k
 
 ## Authors
 
-* **Anna Nguyen**
-* **Tobias Weller**
-* **Michael Färber**
-* **York Sure-Vetter**
-* **Yanglin Xu**
+* **[Anna Nguyen](https://www.aifb.kit.edu/web/Anna_Nguyen)**
+* **[Tobias Weller](https://www.aifb.kit.edu/web/Tobias_Weller)**
+* **[Michael Färber](https://www.aifb.kit.edu/web/Michael_Färber)**
+* **[York Sure-Vetter](https://www.aifb.kit.edu/web/York_Sure-Vetter)**
+* **[Yanglin Xu](https://www.aifb.kit.edu/web/Xu,_Yanglin)**
 
 ## Paper
 
 [Nguyen, Anna; Weller, Tobias; Färber, Michael; Sure-Vetter, York. "Making Neural Networks FAIR." *corr/abs-1907-11569.* ](https://arxiv.org/abs/1907.11569)
+```
+@article{DBLP:journals/corr/abs-1907-11569,
+  author    = {Anna Nguyen and
+               Tobias Weller and
+               York Sure{-}Vetter},
+  title     = {Making Neural Networks {FAIR}},
+  journal   = {CoRR},
+  volume    = {abs/1907.11569},
+  year      = {2019},
+  url       = {http://arxiv.org/abs/1907.11569}
+}
+```
 
 # NNArchi Documentation
 <!-- TOC -->
