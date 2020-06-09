@@ -1,3 +1,7 @@
+<p align="center">
+	<img width="50%" alt="FAIRnets" src="https://user-images.githubusercontent.com/43175809/84171508-295ecf00-aa7b-11ea-9620-bebfe85cb3da.png">
+</p>
+
 # FAIRnets
 
 <font size=3>A framework for making neural networks FAIR</font>
