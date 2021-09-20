@@ -18,7 +18,7 @@ This framework extracts the neural network architecture information to build a k
 
 ## Paper
 
-[Nguyen, Anna; Weller, Tobias; Färber, Michael; Sure-Vetter, York. "Making Neural Networks FAIR." *corr/abs-1907-11569.* ](https://arxiv.org/abs/1907.11569)
+[Nguyen, Anna; Weller, Tobias; Färber, Michael; Sure-Vetter, York. "Making Neural Networks FAIR."](https://doi.org/10.1007/978-3-030-65384-2\_3)
 ```
 @inproceedings{DBLP:conf/kgswc/NguyenW0S20,
   author    = {Anna Nguyen and
