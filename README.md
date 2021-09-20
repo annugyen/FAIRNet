@@ -20,15 +20,26 @@ This framework extracts the neural network architecture information to build a k
 
 [Nguyen, Anna; Weller, Tobias; Färber, Michael; Sure-Vetter, York. "Making Neural Networks FAIR." *corr/abs-1907-11569.* ](https://arxiv.org/abs/1907.11569)
 ```
-@article{DBLP:journals/corr/abs-1907-11569,
+@inproceedings{DBLP:conf/kgswc/NguyenW0S20,
   author    = {Anna Nguyen and
                Tobias Weller and
+               Michael F{\"{a}}rber and
                York Sure{-}Vetter},
+  editor    = {Boris Villaz{\'{o}}n{-}Terrazas and
+               Fernando Ortiz{-}Rodr{\'{\i}}guez and
+               Sanju Mishra Tiwari and
+               Shishir K. Shandilya},
   title     = {Making Neural Networks {FAIR}},
-  journal   = {CoRR},
-  volume    = {abs/1907.11569},
-  year      = {2019},
-  url       = {http://arxiv.org/abs/1907.11569}
+  booktitle = {Knowledge Graphs and Semantic Web - Second Iberoamerican Conference
+               and First Indo-American Conference, {KGSWC} 2020, M{\'{e}}rida,
+               Mexico, November 26-27, 2020, Proceedings},
+  series    = {Communications in Computer and Information Science},
+  volume    = {1232},
+  pages     = {29--44},
+  publisher = {Springer},
+  year      = {2020},
+  url       = {https://doi.org/10.1007/978-3-030-65384-2\_3},
+  doi       = {10.1007/978-3-030-65384-2\_3}
 }
 ```
 
